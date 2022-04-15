@@ -7,4 +7,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Test
+1. LDA
+
+2. QDA
+
+3. Boosting
+
+4. Multinomial
+
+5. GAMS
+
+6. LASSO
+
+
