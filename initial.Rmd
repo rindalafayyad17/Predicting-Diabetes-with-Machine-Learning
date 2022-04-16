@@ -4,19 +4,324 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-1. LDA
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(gbm)
+library(glmnet)
+library(nnet)
+```
+
+
+```{r}
+
+#Loading the dataset 
+
+diabetes <- read.csv(file = "diabetes_012_health_indicators_BRFSS2015.csv", header = TRUE)
+#View(diabetes)
+
+factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
+
+#making the variables as factors
+for (i in factor_variables){
+  diabetes[,i] <- as.factor(diabetes[,i])
+}
+```
+
+```{r}
+
+set.seed(356) #Daniel's record
+
+#splitting the dataset into train and test sets
+n <- nrow(diabetes)
+train_indices <- sample(1:n, size = 0.75*n, replace = F) #picking 3/4 of the dataset to be the training set and 25% to be the test set
+
+train_set <- diabetes[train_indices, ] #training set
+ytrain <- train_set$Diabetes_012
+
+test_set <- diabetes[-train_indices, ] #test set
+ytest <- test_set$Diabetes_012
+```
+
+<br>
+
+<br>
+
+1. LDA 
+
+```{r}
+#fitting LDA model using all the variables as predictors
+
+lda_fit <- lda(Diabetes_012 ~ ., data = train_set, method = "mle")
+
+#predictions using training set
+fhat_train_lda <- as.integer(predict(lda_fit, newdata = train_set, method = "plug-in")$class)
+train_error_lda <- mean(fhat_train_lda != ytrain) #training error
+train_error_lda #Performing super bad
+
+#predictions using test set
+fhat_test_lda <- as.integer(predict(lda_fit, newdata = test_set, method = "plug-in")$class)
+test_error_lda <- mean(fhat_test_lda != ytest) #test error
+test_error_lda #Performing super bad
+```
+
+```{r}
+#fitting LDA using only some variables 
+
+lda_fit2 <- lda(Diabetes_012 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
+
+#predictions using training set
+fhat_train_lda2 <- as.integer(predict(lda_fit2, newdata = train_set, method = "plug-in")$class)
+train_error_lda2 <- mean(fhat_train_lda2 != ytrain)
+train_error_lda2 #Performing super bad
+
+#predictions using test set
+fhat_test_lda2 <- as.integer(predict(lda_fit2, newdata = test_set, method = "plug-in")$class)
+test_error_lda2 <- mean(fhat_test_lda2 != ytest)
+test_error_lda2 #Performing super bad
+```
+
+<br>
+
+<br>
+
 
 2. QDA
 
+```{r}
+#fitting QDA model using all the variables as predictors
+
+qda_fit <- qda(Diabetes_012 ~ ., data = train_set, method = "mle")
+
+#predictions using training set
+fhat_train_qda <- as.integer(predict(qda_fit, newdata = train_set, method = "plug-in")$class)
+train_error_qda <- mean(fhat_train_qda != ytrain)
+train_error_qda #Performing super bad
+
+#predictions using test set
+fhat_test_qda <- as.integer(predict(qda_fit, newdata = test_set, method = "plug-in")$class)
+test_error_qda <- mean(fhat_test_qda != ytest)
+test_error_qda #Performing super bad
+```
+
+```{r}
+
+#fitting QDA using only some variables 
+
+qda_fit2 <- qda(Diabetes_012 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
+
+#predictions using training set
+fhat_train_qda2 <- as.integer(predict(qda_fit2, newdata = train_set, method = "plug-in")$class)
+train_error_qda2 <- mean(fhat_train_qda2 != ytrain)
+train_error_qda2 #Performing super bad
+
+#predictions using test set
+fhat_test_qda2 <- as.integer(predict(qda_fit2, newdata = test_set, method = "plug-in")$class)
+test_error_qda2 <- mean(fhat_test_qda2 != ytest)
+test_error_qda2 #Performing super bad
+```
+
+<br>
+
+<br>
+
 3. Boosting
+
+This takes 40 mins to run. 
+
+```{r}
+#creating a vector of lambdas for the boosting model
+powers <- seq(-10, 0, by = 0.2)
+lambdas <- 10^powers
+
+train_error_boost <- vector()
+test_error_boost <- vector()
+
+#Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
+
+for (i in 1:length(lambdas)){
+
+  #fitting boosting model
+   boost_fit <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "gaussian", n.trees = 500, shrinkage = lambdas[i])
+
+   #training error
+   fhat_train_boost <- as.integer(predict(boost_fit, train_set, n.trees = 500))
+   train_error_boost[i] <- mean(fhat_train_boost != ytrain)
+
+   #test error
+   fhat_test_boost <- as.integer(predict(boost_fit, test_set, n.trees = 500))
+   test_error_boost[i] <- mean(fhat_test_boost != ytest)
+
+ }
+
+#creating a data frame that has the train and test errors for each lambda
+Errors <- data.frame(Lambda = lambdas, trainError = train_error_boost, testError = test_error_boost)
+```
+
+
+```{r}
+
+#Plotting Training MSE vs lambda
+Errors %>% ggplot(aes(x = Lambda, y = trainError))+
+  geom_point(color = "cyan4", lwd = 1)+
+  labs(x = "Shrinkage Parameter", y = "Training Error", title = "Training MSE for Different Values of the Shrinkage Parameter")+
+  theme_bw()
+
+#Plotting Test MSE vs lambda
+Errors %>% ggplot(aes(x = Lambda, y = testError))+
+  geom_point(color = "cyan4", lwd = 1)+
+  labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
+  theme_bw()
+
+```
+
+
+```{r}
+
+#finding which lambda leads to the lowest test error
+mintestError <- Errors$testError[which.min(Errors$testError)]
+mintestError
+minlambda <- Errors$Lambda[which.min(Errors$testError)]
+minlambda
+```
+
+<br>
+
+<br>
+
 
 4. Multinomial
 
-5. GAMS
+```{r}
+#Fitting a multinomial model with all variables as predictors.
+multinom_fit <- multinom(Diabetes_012 ~ . , data = train_set)
 
-6. LASSO
+#training error
+fhat_train_multinom <- as.integer(predict(multinom_fit, train_set))
+train_error_multinom <- mean(fhat_train_multinom != ytrain)
+train_error_multinom 
+
+#test error
+fhat_test_multinom <- as.integer(predict(multinom_fit, test_set))
+test_error_multinom <- mean(fhat_test_multinom != ytest)
+test_error_multinom
+
+```
+
+Don't run this it will take 1 hour (literally). I ran it and the backward selection only removed the fruits and veggies variables. So I ran another multinomial model excluding fruits and veggies.
+```{r}
+#multinomial using backward selection to pick the best variables
+
+#start <- multinom(Diabetes_012 ~ ., data = train_set)
+#backward_multinom <- step(start, direction = "backward")
+```
+
+```{r}
+
+#Multinomial model excluding fruits and veggies variable
+multinom_fit2 <- multinom(Diabetes_012 ~ HighBP + HighChol + CholCheck + BMI + Smoker + Stroke + HeartDiseaseorAttack + PhysActivity + HvyAlcoholConsump + AnyHealthcare + NoDocbcCost + GenHlth + MentHlth + PhysHlth + DiffWalk + Sex + Age + Education + Income, data = train_set )
+
+#training error
+fhat_train_multinom2 <- as.integer(predict(multinom_fit2, train_set))
+train_error_multinom2 <- mean(fhat_train_multinom2 != ytrain)
+train_error_multinom2 
+
+#test error
+fhat_test_multinom2 <- as.integer(predict(multinom_fit2, test_set))
+test_error_multinom2 <- mean(fhat_test_multinom2 != ytest)
+test_error_multinom2
+```
+
+<br>
+
+<br>
+
+5. LASSO
+
+```{r}
+xtrain <- model.matrix(Diabetes_012 ~ . , data = train_set) #creating a matrix for the train set
+xtest <- model.matrix(Diabetes_012 ~ . , data = test_set) #creating a matrix for the test set
+
+#Takes a bit of time to run 
+lasso_fit <- glmnet(xtrain, ytrain, alpha = 1, family = "multinomial")
+
+#Takes a lot of time to run.
+cv.out <- cv.glmnet(xtrain, ytrain, alpha = 1, family = "multinomial", nfolds = 5) #choosing the best lambda by cross validation. I chose K = 5 folds, because if i keep the default of K = 10, it takes FOREVER to run
+
+bestlambda <- cv.out$lambda.min #outputting the best lambda
+bestlambda
+
+#training error
+fhat_train_lasso <- as.integer(predict(lasso_fit, s = bestlambda, newx = xtrain))
+train_error_lasso <- mean(fhat_train_lasso != ytrain)
+train_error_lasso
+
+#test error
+fhat_test_lasso <- as.integer(predict(lasso_fit, s = bestlambda, newx = xtest))
+test_error_lasso <- mean(fhat_test_lasso != ytest)
+test_error_lasso
+```
+
+
+6. GAMS
+
+7. Neural networks
+
+8. PCA
+
+```{r}
+#making the columns numeric, because the prcomp function requires numerical entries. 
+for (i in 1:ncol(train_set)){
+  train_set[,i] <- as.numeric(as.character(train_set[,i]))
+}
+
+#running PCA on the training dataset
+pc_diabetes <- prcomp(train_set %>% dplyr::select(-Diabetes_012), scale = T)
+
+#finding how many components to retain such that 90% of the variability is maintained.
+lambda <- pc_diabetes$sdev^2
+M <- min(which(cumsum(lambda)/sum(lambda) > 0.9))
+M 
+
+#extracting the PCs
+pc_diabetes_x <- as.data.frame(pc_diabetes$x)
+
+#retaining the first M components
+pc_retain <- pc_diabetes_x[, 1:M]
+
+#combining the retained dataset + labels
+pc_combined <- cbind(train_set$Diabetes_012, pc_retain)
+colnames(pc_combined)[1] <- "Diabetes_012"
+```
+
+fitting a QDA model after performing PCA
+```{r}
+qda_fit_pc <- qda(as.factor(Diabetes_012) ~ . , data = pc_combined, method = "mle")
+fhat_train_qda_pc <- as.integer(predict(qda_fit_pc, newdata = pc_combined, method = "plug-in")$class)
+train_error_pc <- mean(fhat_train_qda_pc != pc_combined$Diabetes_012)
+train_error_pc #still extremely high. 
+```
+
+fitting QDA using test set
+```{r}
+for (i in 1:ncol(test_set)){
+  test_set[,i] <- as.numeric(as.character(test_set[,i]))
+}
+
+#applying transformation to test set
+new_test <- as.matrix(subset(test_set, select = -Diabetes_012)) %*% as.matrix(pc_diabetes$rotation)
+#retaining first M PCs
+new_test <- new_test[,1:M] 
+
+#The fhat tests are all equal to 3. idk what went wrong. 
+fhat_test_qda_pc <- as.integer(predict(qda_fit_pc, newdata = as.data.frame(new_test), method = "plug-in")$class)
+test_error_pc <- mean(fhat_test_qda_pc != test_set$Diabetes_012)
+
+```
 
 
