@@ -3,8 +3,6 @@ title: "263 Project Initial Rmd"
 output: html_document
 ---
 
-#### Willow testing
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
