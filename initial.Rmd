@@ -78,7 +78,7 @@ lda_fit2 <- lda(Diabetes_012 ~ HighBP + HighChol + BMI + Smoker + PhysActivity +
 #predictions using training set
 fhat_train_lda2 <- predict(lda_fit2, newdata = train_set, method = "plug-in")$class
 train_error_lda2 <- mean(fhat_train_lda2 != ytrain)
-train_error_lda2 #Performing super bad
+train_error_lda2
 
 #predictions using test set
 fhat_test_lda2 <- predict(lda_fit2, newdata = test_set, method = "plug-in")$class
@@ -106,7 +106,7 @@ train_error_qda
 #predictions using test set
 fhat_test_qda <- predict(qda_fit, newdata = test_set, method = "plug-in")$class
 test_error_qda <- mean(fhat_test_qda != ytest)
-test_error_qda #Performing super bad
+test_error_qda 
 ```
 
 ```{r}
@@ -257,12 +257,12 @@ bestlambda <- cv.out$lambda.min #outputting the best lambda
 bestlambda # = 5.28e-05
 
 #training error
-fhat_train_lasso <- predict(lasso_fit, s = bestlambda, newx = xtrain)
+fhat_train_lasso <- predict(lasso_fit, s = bestlambda, newx = xtrain, type = "class")
 train_error_lasso <- mean(fhat_train_lasso != ytrain)
 train_error_lasso
 
 #test error
-fhat_test_lasso <- predict(lasso_fit, s = bestlambda, newx = xtest)
+fhat_test_lasso <- predict(lasso_fit, s = bestlambda, newx = xtest, type = "class")
 test_error_lasso <- mean(fhat_test_lasso != ytest)
 test_error_lasso
 ```
@@ -288,7 +288,7 @@ lambda <- pc_diabetes$sdev^2
 M <- min(which(cumsum(lambda)/sum(lambda) > 0.9))
 M 
 
-#extracting the PCs
+#extracting the new data
 pc_diabetes_x <- as.data.frame(pc_diabetes$x)
 
 #retaining the first M components
@@ -304,7 +304,7 @@ fitting a QDA model after performing PCA
 qda_fit_pc <- qda(as.factor(Diabetes_012) ~ . , data = pc_combined, method = "mle")
 fhat_train_qda_pc <- predict(qda_fit_pc, newdata = pc_combined, method = "plug-in")$class
 train_error_pc <- mean(fhat_train_qda_pc != pc_combined$Diabetes_012)
-train_error_pc #still extremely high. 
+train_error_pc 
 ```
 
 fitting QDA using test set
