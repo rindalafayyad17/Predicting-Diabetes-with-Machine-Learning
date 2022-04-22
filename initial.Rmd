@@ -147,14 +147,16 @@ test_error_boost <- vector()
 for (i in 1:length(lambdas)){
 
   #fitting boosting model
-   boost_fit <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "gaussian", n.trees = 500, shrinkage = lambdas[i])
+   boost_fit <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = lambdas[i])
 
    #training error
-   fhat_train_boost <- predict(boost_fit, train_set, n.trees = 500)
+   phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+   fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
    train_error_boost[i] <- mean(fhat_train_boost != ytrain)
 
    #test error
-   fhat_test_boost <- predict(boost_fit, test_set, n.trees = 500)
+   phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+   fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
    test_error_boost[i] <- mean(fhat_test_boost != ytest)
 
  }
