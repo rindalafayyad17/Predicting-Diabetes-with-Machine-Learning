@@ -80,7 +80,7 @@ test_error_lda
 # At the right side of each tile, we have the row percentage. 
 
 
-# Training 3x3 confusion matrix -- actual value, predicted value
+# LDA training 3x3 confusion matrix -- actual value, predicted value
 
 train.matrix.lda <- as_tibble(table(ytrain, fhat_train_lda))
 
@@ -98,7 +98,7 @@ plot_confusion_matrix(train.matrix.lda,
                       )
 
 
-# Test 3x3 confusion matrix -- actual value, predicted value
+# LDA Test 3x3 confusion matrix -- actual value, predicted value
 
 test.matrix.lda <- as_tibble(table(ytest, fhat_test_lda))
 
@@ -135,7 +135,7 @@ test_error_lda2
 
 
 ```{r}
-# Training 3x3 confusion matrix -- actual value, predicted value
+# LDA2 train 3x3 confusion matrix
 
 train.matrix.lda2 <- as_tibble(table(ytrain, fhat_train_lda2))
 
@@ -153,7 +153,7 @@ plot_confusion_matrix(train.matrix.lda2,
                       )
 
 
-# Test 3x3 confusion matrix -- actual value, predicted value
+# LDA2 test 3x3 confusion matrix
 
 test.matrix.lda2 <- as_tibble(table(ytest, fhat_test_lda2))
 
@@ -197,7 +197,7 @@ test_error_qda
 ```
 
 ```{r}
-# Training 3x3 confusion matrix -- actual value, predicted value
+# QDA train 3x3 confusion matrix
 
 train.matrix.qda <- as_tibble(table(ytrain, fhat_train_qda))
 
@@ -215,7 +215,7 @@ plot_confusion_matrix(train.matrix.qda,
                       )
 
 
-# Test 3x3 confusion matrix -- actual value, predicted value
+# QDA test 3x3 confusion matrix
 
 test.matrix.qda <- as_tibble(table(ytest, fhat_test_qda))
 
@@ -252,7 +252,7 @@ test_error_qda2
 
 
 ```{r}
-# Training 3x3 confusion matrix -- actual value, predicted value
+# QDA2 train 3x3 confusion matrix -- actual value, predicted value
 
 train.matrix.qda2 <- as_tibble(table(ytrain, fhat_train_qda2))
 
@@ -270,7 +270,7 @@ plot_confusion_matrix(train.matrix.qda2,
                       )
 
 
-# Test 3x3 confusion matrix -- actual value, predicted value
+# QDA2 test 3x3 confusion matrix -- actual value, predicted value
 
 test.matrix.qda2 <- as_tibble(table(ytest, fhat_test_qda2))
 
@@ -353,6 +353,59 @@ mintestError
 minlambda <- Errors$Lambda[which.min(Errors$testError)]
 minlambda
 ```
+
+```{r}
+# Running boostin model with minlambda 
+boost_fit_best <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = minlambda)
+
+#training error
+phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
+train_error_boost <- mean(fhat_train_boost != ytrain)
+
+#test error
+phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
+test_error_boost <- mean(fhat_test_boost != ytest)
+```
+
+```{r}
+# Boost train 3x3 confusion matrix
+
+train.matrix.boost <- as_tibble(table(ytrain, fhat_train_boost))
+
+plot_confusion_matrix(train.matrix.boost, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Boost test 3x3 confusion matrix
+
+test.matrix.boost <- as_tibble(table(ytest, fhat_test_boost))
+
+plot_confusion_matrix(test.matrix.boost, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
 
 <br>
 
