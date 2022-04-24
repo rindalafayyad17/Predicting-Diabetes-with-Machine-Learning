@@ -15,6 +15,8 @@ library(MASS)
 library(gbm)
 library(glmnet)
 library(nnet)
+library(cvms)
+library(tibble)
 ```
 
 
@@ -48,6 +50,7 @@ test_set <- diabetes[-train_indices, ] #test set
 ytest <- test_set$Diabetes_012
 ```
 
+
 <br>
 
 <br>
@@ -70,6 +73,50 @@ test_error_lda <- mean(fhat_test_lda != ytest) #test error
 test_error_lda 
 ```
 
+
+```{r}
+# In the middle of each tile, we have the normalized count (overall percentage) and, beneath it, the count.
+# At the bottom, we have the column percentage.
+# At the right side of each tile, we have the row percentage. 
+
+
+# Training 3x3 confusion matrix -- actual value, predicted value
+
+train.matrix.lda <- as_tibble(table(ytrain, fhat_train_lda))
+
+plot_confusion_matrix(train.matrix.lda, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_lda",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Test 3x3 confusion matrix -- actual value, predicted value
+
+test.matrix.lda <- as_tibble(table(ytest, fhat_test_lda))
+
+plot_confusion_matrix(test.matrix.lda, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_lda",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+
 ```{r}
 #fitting LDA using only some variables 
 
@@ -85,6 +132,46 @@ fhat_test_lda2 <- predict(lda_fit2, newdata = test_set, method = "plug-in")$clas
 test_error_lda2 <- mean(fhat_test_lda2 != ytest)
 test_error_lda2
 ```
+
+
+```{r}
+# Training 3x3 confusion matrix -- actual value, predicted value
+
+train.matrix.lda2 <- as_tibble(table(ytrain, fhat_train_lda2))
+
+plot_confusion_matrix(train.matrix.lda2, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_lda2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Test 3x3 confusion matrix -- actual value, predicted value
+
+test.matrix.lda2 <- as_tibble(table(ytest, fhat_test_lda2))
+
+plot_confusion_matrix(test.matrix.lda2, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_lda2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+
 
 <br>
 
@@ -110,6 +197,43 @@ test_error_qda
 ```
 
 ```{r}
+# Training 3x3 confusion matrix -- actual value, predicted value
+
+train.matrix.qda <- as_tibble(table(ytrain, fhat_train_qda))
+
+plot_confusion_matrix(train.matrix.qda, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_qda",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Test 3x3 confusion matrix -- actual value, predicted value
+
+test.matrix.qda <- as_tibble(table(ytest, fhat_test_qda))
+
+plot_confusion_matrix(test.matrix.qda, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_qda",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+```{r}
 
 #fitting QDA using only some variables 
 
@@ -124,6 +248,44 @@ train_error_qda2
 fhat_test_qda2 <- predict(qda_fit2, newdata = test_set, method = "plug-in")$class
 test_error_qda2 <- mean(fhat_test_qda2 != ytest)
 test_error_qda2 
+```
+
+
+```{r}
+# Training 3x3 confusion matrix -- actual value, predicted value
+
+train.matrix.qda2 <- as_tibble(table(ytrain, fhat_train_qda2))
+
+plot_confusion_matrix(train.matrix.qda2, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_qda2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Test 3x3 confusion matrix -- actual value, predicted value
+
+test.matrix.qda2 <- as_tibble(table(ytest, fhat_test_qda2))
+
+plot_confusion_matrix(test.matrix.qda2, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_qda2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
 ```
 
 <br>
@@ -215,6 +377,46 @@ test_error_multinom
 
 ```
 
+
+```{r}
+# Multinomial train 3x3 confusion matrix
+
+train.matrix.multinom <- as_tibble(table(ytrain, fhat_train_multinom))
+
+plot_confusion_matrix(train.matrix.multinom, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_multinom",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Multinomial test 3x3 confusion matrix
+
+test.matrix.multinom <- as_tibble(table(ytest, fhat_test_multinom))
+
+plot_confusion_matrix(test.matrix.multinom, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_multinom",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+
+
 Don't run this it will take 1 hour (literally). I ran it and the backward selection only removed the fruits and veggies variables. So I ran another multinomial model excluding fruits and veggies.
 ```{r}
 #multinomial using backward selection to pick the best variables
@@ -239,6 +441,80 @@ test_error_multinom2 <- mean(fhat_test_multinom2 != ytest)
 test_error_multinom2
 ```
 
+
+```{r}
+# Multinomial2 train 3x3 confusion matrix
+
+train.matrix.multinom2 <- as_tibble(table(ytrain, fhat_train_multinom2))
+
+plot_confusion_matrix(train.matrix.multinom2, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_multinom2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Multinomial2 test 3x3 confusion matrix
+
+test.matrix.multinom2 <- as_tibble(table(ytest, fhat_test_multinom2))
+
+plot_confusion_matrix(test.matrix.multinom2, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_multinom2",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+```{r}
+# Multinomial train 3x3 confusion matrix
+
+train.matrix.multinom <- as_tibble(table(ytrain, fhat_train_multinom))
+
+plot_confusion_matrix(train.matrix.multinom, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_multinom",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Multinomial test 3x3 confusion matrix
+
+test.matrix.multinom <- as_tibble(table(ytest, fhat_test_multinom))
+
+plot_confusion_matrix(test.matrix.multinom, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_multinom",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
 <br>
 
 <br>
@@ -269,6 +545,42 @@ test_error_lasso <- mean(fhat_test_lasso != ytest)
 test_error_lasso
 ```
 
+```{r}
+# Lasso train 3x3 confusion matrix
+
+train.matrix.lasso <- as_tibble(table(ytrain, fhat_train_lasso))
+
+plot_confusion_matrix(train.matrix.lasso, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_lasso",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Lasso test 3x3 confusion matrix
+
+test.matrix.lasso <- as_tibble(table(ytest, fhat_test_lasso))
+
+plot_confusion_matrix(test.matrix.lasso, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_lasso",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
 
 6. GAMS
 
