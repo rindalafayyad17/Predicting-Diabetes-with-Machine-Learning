@@ -28,12 +28,19 @@ library(tibble)
 diabetes <- read.csv(file = "diabetes_012_health_indicators_BRFSS2015.csv", header = TRUE)
 #View(diabetes)
 
-factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
+# move anyone from class 0 into class 1
+diabetes$Diabetes_012[diabetes$Diabetes_012 == 0] <- 1
+colnames(diabetes)[1] <- "Diabetes_12"
 
-#making the variables as factors
-for (i in factor_variables){
-  diabetes[,i] <- as.factor(diabetes[,i])
-}
+diabetes$Diabetes_12 <- as.factor(diabetes$Diabetes_12)
+
+# factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
+# 
+# #making the variables as factors
+# for (i in factor_variables){
+#   diabetes[,i] <- as.factor(diabetes[,i])
+# }
+
 ```
 
 ```{r}
@@ -45,10 +52,10 @@ n <- nrow(diabetes)
 train_indices <- sample(1:n, size = 0.75*n, replace = F) #picking 3/4 of the dataset to be the training set and 25% to be the test set
 
 train_set <- diabetes[train_indices, ] #training set
-ytrain <- train_set$Diabetes_012
+ytrain <- train_set$Diabetes_12
 
 test_set <- diabetes[-train_indices, ] #test set
-ytest <- test_set$Diabetes_012
+ytest <- test_set$Diabetes_12
 ```
 
 
@@ -61,7 +68,7 @@ ytest <- test_set$Diabetes_012
 ```{r}
 #fitting LDA model using all the variables as predictors
 
-lda_fit <- lda(Diabetes_012 ~ ., data = train_set, method = "mle")
+lda_fit <- lda(Diabetes_12 ~ ., data = train_set, method = "mle")
 
 #predictions using training set
 fhat_train_lda <- predict(lda_fit, newdata = train_set, method = "plug-in")$class
@@ -81,7 +88,7 @@ test_error_lda
 # At the right side of each tile, we have the row percentage. 
 
 
-# LDA training 3x3 confusion matrix -- actual value, predicted value
+# LDA training 2x2 confusion matrix -- actual value, predicted value
 
 train.matrix.lda <- as_tibble(table(ytrain, fhat_train_lda))
 
@@ -99,7 +106,7 @@ plot_confusion_matrix(train.matrix.lda,
                       )
 
 
-# LDA Test 3x3 confusion matrix -- actual value, predicted value
+# LDA Test 2x2 confusion matrix -- actual value, predicted value
 
 test.matrix.lda <- as_tibble(table(ytest, fhat_test_lda))
 
@@ -121,7 +128,7 @@ plot_confusion_matrix(test.matrix.lda,
 ```{r}
 #fitting LDA using only some variables 
 
-lda_fit2 <- lda(Diabetes_012 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
+lda_fit2 <- lda(Diabetes_12 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
 
 #predictions using training set
 fhat_train_lda2 <- predict(lda_fit2, newdata = train_set, method = "plug-in")$class
@@ -136,7 +143,7 @@ test_error_lda2
 
 
 ```{r}
-# LDA2 train 3x3 confusion matrix
+# LDA2 train 2x2 confusion matrix
 
 train.matrix.lda2 <- as_tibble(table(ytrain, fhat_train_lda2))
 
@@ -154,7 +161,7 @@ plot_confusion_matrix(train.matrix.lda2,
                       )
 
 
-# LDA2 test 3x3 confusion matrix
+# LDA2 test 2x2 confusion matrix
 
 test.matrix.lda2 <- as_tibble(table(ytest, fhat_test_lda2))
 
@@ -184,7 +191,7 @@ plot_confusion_matrix(test.matrix.lda2,
 ```{r}
 #fitting QDA model using all the variables as predictors
 
-qda_fit <- qda(Diabetes_012 ~ ., data = train_set, method = "mle")
+qda_fit <- qda(Diabetes_12 ~ ., data = train_set, method = "mle")
 
 #predictions using training set
 fhat_train_qda <- predict(qda_fit, newdata = train_set, method = "plug-in")$class
@@ -198,7 +205,7 @@ test_error_qda
 ```
 
 ```{r}
-# QDA train 3x3 confusion matrix
+# QDA train 2x2 confusion matrix
 
 train.matrix.qda <- as_tibble(table(ytrain, fhat_train_qda))
 
@@ -216,7 +223,7 @@ plot_confusion_matrix(train.matrix.qda,
                       )
 
 
-# QDA test 3x3 confusion matrix
+# QDA test 2x2 confusion matrix
 
 test.matrix.qda <- as_tibble(table(ytest, fhat_test_qda))
 
@@ -234,11 +241,13 @@ plot_confusion_matrix(test.matrix.qda,
                       )
 ```
 
+interesting that QDA is correctly predicting more people who actually have diabetes (and is also falsely predicting too many people to have diabetes). this might actually be more useful
+
 ```{r}
 
 #fitting QDA using only some variables 
 
-qda_fit2 <- qda(Diabetes_012 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
+qda_fit2 <- qda(Diabetes_12 ~ HighBP + HighChol + BMI + Smoker + PhysActivity + Veggies + HvyAlcoholConsump + PhysHlth + DiffWalk + Sex + Age + Income, data = train_set, method = "mle")
 
 #predictions using training set
 fhat_train_qda2 <- predict(qda_fit2, newdata = train_set, method = "plug-in")$class
@@ -253,7 +262,7 @@ test_error_qda2
 
 
 ```{r}
-# QDA2 train 3x3 confusion matrix -- actual value, predicted value
+# QDA2 train 2x2 confusion matrix -- actual value, predicted value
 
 train.matrix.qda2 <- as_tibble(table(ytrain, fhat_train_qda2))
 
@@ -271,7 +280,7 @@ plot_confusion_matrix(train.matrix.qda2,
                       )
 
 
-# QDA2 test 3x3 confusion matrix -- actual value, predicted value
+# QDA2 test 2x2 confusion matrix -- actual value, predicted value
 
 test.matrix.qda2 <- as_tibble(table(ytest, fhat_test_qda2))
 
@@ -310,7 +319,7 @@ test_error_boost <- vector()
 for (i in 1:length(lambdas)){
 
   #fitting boosting model
-   boost_fit <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = lambdas[i])
+   boost_fit <- gbm(Diabetes_12 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = lambdas[i])
 
    #training error
    phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
@@ -357,7 +366,7 @@ minlambda
 
 ```{r}
 # Running boostin model with minlambda 
-boost_fit_best <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = minlambda)
+boost_fit_best <- gbm(Diabetes_12 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = minlambda)
 
 #training error
 phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
@@ -371,7 +380,7 @@ test_error_boost <- mean(fhat_test_boost != ytest)
 ```
 
 ```{r}
-# Boost train 3x3 confusion matrix
+# Boost train 2x2 confusion matrix
 
 train.matrix.boost <- as_tibble(table(ytrain, fhat_train_boost))
 
@@ -389,7 +398,7 @@ plot_confusion_matrix(train.matrix.boost,
                       )
 
 
-# Boost test 3x3 confusion matrix
+# Boost test 2x2 confusion matrix
 
 test.matrix.boost <- as_tibble(table(ytest, fhat_test_boost))
 
@@ -413,33 +422,36 @@ plot_confusion_matrix(test.matrix.boost,
 <br>
 
 
-4. Multinomial
+4. Logistic
 
 ```{r}
 #Fitting a multinomial model with all variables as predictors.
-multinom_fit <- multinom(Diabetes_012 ~ . , data = train_set)
+logit_fit <- glm(Diabetes_12 ~ . , family = binomial(), data = train_set)
 
 #training error
-fhat_train_multinom <- predict(multinom_fit, train_set)
-train_error_multinom <- mean(fhat_train_multinom != ytrain)
-train_error_multinom 
+phat_train_logit <- predict(logit_fit, train_set, type = "response")
+fhat_train_logit <- ifelse(phat_train_logit > 0.5, 2, 1)
+train_error_logit <- mean(fhat_train_logit != ytrain)
+train_error_logit 
 
 #test error
-fhat_test_multinom <- predict(multinom_fit, test_set)
-test_error_multinom <- mean(fhat_test_multinom != ytest)
-test_error_multinom
+phat_test_logit <- predict(logit_fit, test_set)
+fhat_test_logit <- ifelse(phat_test_logit > 0.5, 2, 1)
+test_error_logit <- mean(fhat_test_logit != ytest)
+test_error_logit
 
 ```
 
+can use a different cutoff for logistic!
 
 ```{r}
-# Multinomial train 3x3 confusion matrix
+# logistic train 2x2 confusion matrix
 
-train.matrix.multinom <- as_tibble(table(ytrain, fhat_train_multinom))
+train.matrix.logit <- as_tibble(table(ytrain, fhat_train_logit))
 
-plot_confusion_matrix(train.matrix.multinom, 
+plot_confusion_matrix(train.matrix.logit, 
                       target_col = "ytrain", 
-                      prediction_col = "fhat_train_multinom",
+                      prediction_col = "fhat_train_logit",
                       counts_col = "n",
                       palette = "Greens",
                       add_sums = TRUE,
@@ -451,13 +463,13 @@ plot_confusion_matrix(train.matrix.multinom,
                       )
 
 
-# Multinomial test 3x3 confusion matrix
+# logistic test 2x2 confusion matrix
 
-test.matrix.multinom <- as_tibble(table(ytest, fhat_test_multinom))
+test.matrix.logit <- as_tibble(table(ytest, fhat_test_logit))
 
-plot_confusion_matrix(test.matrix.multinom, 
+plot_confusion_matrix(test.matrix.logit, 
                       target_col = "ytest", 
-                      prediction_col = "fhat_test_multinom",
+                      prediction_col = "fhat_test_logit",
                       counts_col = "n",
                       palette = "Greens",
                       add_sums = TRUE,
@@ -482,28 +494,30 @@ Don't run this it will take 1 hour (literally). I ran it and the backward select
 ```{r}
 
 #Multinomial model excluding fruits and veggies variable
-multinom_fit2 <- multinom(Diabetes_012 ~ HighBP + HighChol + CholCheck + BMI + Smoker + Stroke + HeartDiseaseorAttack + PhysActivity + HvyAlcoholConsump + AnyHealthcare + NoDocbcCost + GenHlth + MentHlth + PhysHlth + DiffWalk + Sex + Age + Education + Income, data = train_set )
+logit_fit2 <- glm(Diabetes_12 ~ HighBP + HighChol + CholCheck + BMI + Smoker + Stroke + HeartDiseaseorAttack + PhysActivity + HvyAlcoholConsump + AnyHealthcare + NoDocbcCost + GenHlth + MentHlth + PhysHlth + DiffWalk + Sex + Age + Education + Income, family = binomial(), data = train_set )
 
 #training error
-fhat_train_multinom2 <- predict(multinom_fit2, train_set)
-train_error_multinom2 <- mean(fhat_train_multinom2 != ytrain)
-train_error_multinom2 
+phat_train_logit2 <- predict(logit_fit2, train_set)
+fhat_train_logit2 <- ifelse(phat_train_logit2 > 0.5, 2, 1)
+train_error_logit2 <- mean(fhat_train_logit2 != ytrain)
+train_error_logit2 
 
 #test error
-fhat_test_multinom2 <- predict(multinom_fit2, test_set)
-test_error_multinom2 <- mean(fhat_test_multinom2 != ytest)
-test_error_multinom2
+phat_test_logit2 <- predict(logit_fit2, test_set)
+fhat_test_logit2 <- ifelse(phat_test_logit2 > 0.5, 2, 1)
+test_error_logit2 <- mean(fhat_test_logit2 != ytest)
+test_error_logit2
 ```
 
 
 ```{r}
-# Multinomial2 train 3x3 confusion matrix
+# logistic2 train 2x2 confusion matrix
 
-train.matrix.multinom2 <- as_tibble(table(ytrain, fhat_train_multinom2))
+train.matrix.logit2 <- as_tibble(table(ytrain, fhat_train_logit2))
 
-plot_confusion_matrix(train.matrix.multinom2, 
+plot_confusion_matrix(train.matrix.logit2, 
                       target_col = "ytrain", 
-                      prediction_col = "fhat_train_multinom2",
+                      prediction_col = "fhat_train_logit2",
                       counts_col = "n",
                       palette = "Greens",
                       add_sums = TRUE,
@@ -515,13 +529,13 @@ plot_confusion_matrix(train.matrix.multinom2,
                       )
 
 
-# Multinomial2 test 3x3 confusion matrix
+# logistic2 test 2x2 confusion matrix
 
-test.matrix.multinom2 <- as_tibble(table(ytest, fhat_test_multinom2))
+test.matrix.logit2 <- as_tibble(table(ytest, fhat_test_logit2))
 
-plot_confusion_matrix(test.matrix.multinom2, 
+plot_confusion_matrix(test.matrix.logit2, 
                       target_col = "ytest", 
-                      prediction_col = "fhat_test_multinom2",
+                      prediction_col = "fhat_test_logit2",
                       counts_col = "n",
                       palette = "Greens",
                       add_sums = TRUE,
@@ -533,42 +547,7 @@ plot_confusion_matrix(test.matrix.multinom2,
                       )
 ```
 
-```{r}
-# Multinomial train 3x3 confusion matrix
 
-train.matrix.multinom <- as_tibble(table(ytrain, fhat_train_multinom))
-
-plot_confusion_matrix(train.matrix.multinom, 
-                      target_col = "ytrain", 
-                      prediction_col = "fhat_train_multinom",
-                      counts_col = "n",
-                      palette = "Greens",
-                      add_sums = TRUE,
-                      sums_settings = sum_tile_settings(
-                        palette = "Oranges",
-                        label = "Total",
-                        tc_tile_border_color = "black"
-                        )
-                      )
-
-
-# Multinomial test 3x3 confusion matrix
-
-test.matrix.multinom <- as_tibble(table(ytest, fhat_test_multinom))
-
-plot_confusion_matrix(test.matrix.multinom, 
-                      target_col = "ytest", 
-                      prediction_col = "fhat_test_multinom",
-                      counts_col = "n",
-                      palette = "Greens",
-                      add_sums = TRUE,
-                      sums_settings = sum_tile_settings(
-                        palette = "Oranges",
-                        label = "Total",
-                        tc_tile_border_color = "black"
-                        )
-                      )
-```
 <br>
 
 <br>
@@ -576,8 +555,8 @@ plot_confusion_matrix(test.matrix.multinom,
 5. LASSO
 
 ```{r}
-xtrain <- model.matrix(Diabetes_012 ~ . , data = train_set) #creating a matrix for the train set
-xtest <- model.matrix(Diabetes_012 ~ . , data = test_set) #creating a matrix for the test set
+xtrain <- model.matrix(Diabetes_12 ~ . , data = train_set) #creating a matrix for the train set
+xtest <- model.matrix(Diabetes_12 ~ . , data = test_set) #creating a matrix for the test set
 
 #Takes a bit of time to run 
 lasso_fit <- glmnet(xtrain, ytrain, alpha = 1, family = "multinomial")
@@ -600,7 +579,7 @@ test_error_lasso
 ```
 
 ```{r}
-# Lasso train 3x3 confusion matrix
+# Lasso train 2x3 confusion matrix
 
 train.matrix.lasso <- as_tibble(table(ytrain, fhat_train_lasso))
 
@@ -649,7 +628,7 @@ for (i in 1:ncol(train_set)){
 }
 
 #running PCA on the training dataset
-pc_diabetes <- prcomp(train_set %>% dplyr::select(-Diabetes_012), scale = T)
+pc_diabetes <- prcomp(train_set %>% dplyr::select(-Diabetes_12), scale = T)
 
 #finding how many components to retain such that 90% of the variability is maintained.
 lambda <- pc_diabetes$sdev^2
@@ -663,15 +642,15 @@ pc_diabetes_x <- as.data.frame(pc_diabetes$x)
 pc_retain <- pc_diabetes_x[, 1:M]
 
 #combining the retained dataset + labels
-pc_combined <- cbind(train_set$Diabetes_012, pc_retain)
-colnames(pc_combined)[1] <- "Diabetes_012"
+pc_combined <- cbind(train_set$Diabetes_12, pc_retain)
+colnames(pc_combined)[1] <- "Diabetes_12"
 ```
 
 fitting a QDA model after performing PCA
 ```{r}
-qda_fit_pc <- qda(as.factor(Diabetes_012) ~ . , data = pc_combined, method = "mle")
+qda_fit_pc <- qda(as.factor(Diabetes_12) ~ . , data = pc_combined, method = "mle")
 fhat_train_qda_pc <- predict(qda_fit_pc, newdata = pc_combined, method = "plug-in")$class
-train_error_pc <- mean(fhat_train_qda_pc != pc_combined$Diabetes_012)
+train_error_pc <- mean(fhat_train_qda_pc != pc_combined$Diabetes_12)
 train_error_pc 
 ```
 
@@ -682,18 +661,16 @@ for (i in 1:ncol(test_set)){
 }
 
 #applying transformation to test set
-new_test <- as.matrix(subset(test_set, select = -Diabetes_012)) %*% as.matrix(pc_diabetes$rotation)
+new_test <- as.matrix(subset(test_set, select = -Diabetes_12)) %*% as.matrix(pc_diabetes$rotation)
 #retaining first M PCs
 new_test <- new_test[,1:M] 
 
 #The fhat tests are all equal to 2. idk what went wrong. 
 fhat_test_qda_pc <- predict(qda_fit_pc, newdata = as.data.frame(new_test), method = "plug-in")$class
-test_error_pc <- mean(fhat_test_qda_pc != test_set$Diabetes_012)
+test_error_pc <- mean(fhat_test_qda_pc != test_set$Diabetes_12)
 test_error_pc
 
 ```
-
-
 
 
 
