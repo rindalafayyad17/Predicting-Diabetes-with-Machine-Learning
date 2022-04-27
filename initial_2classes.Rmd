@@ -62,6 +62,108 @@ ytest <- test_set$Diabetes_12
 <br>
 
 <br>
+```{r}
+get_recall <- function(pred, target){
+   TP = sum((pred==2) & (target==2))
+   TN = sum((pred==1) & (target==1))
+   FP = sum((pred==2) & (target==1))
+   FN = sum((pred==1) & (target==2))
+   recall = TP/(TP+FN)
+   precision = TP/(TP+FP)
+   accuracy = (TP+TN)/(TP+TN+FP+FN)
+   recall
+}
+
+get_precision <- function(pred, target){
+   TP = sum((pred==2) & (target==2))
+   TN = sum((pred==1) & (target==1))
+   FP = sum((pred==2) & (target==1))
+   FN = sum((pred==1) & (target==2))
+   accuracy = (TP+TN)/(TP+TN+FP+FN)
+   accuracy
+}
+
+get_accuracy <- function(pred, target){
+   TP = sum((pred==2) & (target==2))
+   TN = sum((pred==1) & (target==1))
+   FP = sum((pred==2) & (target==1))
+   FN = sum((pred==1) & (target==2))
+   accuracy = (TP+TN)/(TP+TN+FP+FN)
+   accuracy
+}
+```
+
+
+```{r}
+evaluate_on_income <- function(pred, target, income) {
+   df <- data.frame(pred, target, income)
+   colnames(df) <- c('pred','target','income')
+   list_metrices <- list()
+   for (i in (1:8)){
+      filtered_df = df[df$income==i, ]
+      p = get_precision(filtered_df$pred, filtered_df$target)
+      r = get_recall(filtered_df$pred, filtered_df$target)
+      a = get_accuracy(filtered_df$pred, filtered_df$target)
+      fraction = dim(filtered_df)[1]/dim(df)[1]
+      list_metrices[[i]] = c(p, r, a, fraction)
+   }
+   list_metrices
+}
+```
+
+
+```{r}
+evaluate_on_education<- function(pred, target, education) {
+   df <- data.frame(pred, target, education)
+   colnames(df) <- c('pred','target','education')
+   list_metrices <- list()
+   for (i in (1:6)){
+      filtered_df = df[df$education==i, ]
+      print(dim(filtered_df)[1])
+      p = get_precision(filtered_df$pred, filtered_df$target)
+      r = get_recall(filtered_df$pred, filtered_df$target)
+      a = get_accuracy(filtered_df$pred, filtered_df$target)
+      fraction = dim(filtered_df)[1]/dim(df)[1]
+      list_metrices[[i]] = c(p, r, a, fraction)
+   }
+   list_metrices
+}
+```
+
+```{r}
+evaluate_on_age<- function(pred, target, age) {
+   df <- data.frame(pred, target, age)
+   colnames(df) <- c('pred','target','age')
+   list_metrices <- list()
+   for (i in (1:13)){
+      filtered_df = df[df$age==i, ]
+      print(dim(filtered_df)[1])
+      p = get_precision(filtered_df$pred, filtered_df$target)
+      r = get_recall(filtered_df$pred, filtered_df$target)
+      a = get_accuracy(filtered_df$pred, filtered_df$target)
+      fraction = dim(filtered_df)[1]/dim(df)[1]
+      list_metrices[[i]] = c(p, r, a, fraction)
+   }
+   list_metrices
+}
+```
+
+```{r}
+evaluate_on_binary_variables <- function(pred, target, variable_values, variable_name) {
+   df <- data.frame(pred, target, variable_values)
+   colnames(df) <- c('pred','target',variable_name)
+   list_metrices <- list()
+   for (i in (0:1)){
+      filtered_df = df[df[,variable_name]==i, ]
+      p = get_precision(filtered_df$pred, filtered_df$target)
+      r = get_recall(filtered_df$pred, filtered_df$target)
+      a = get_accuracy(filtered_df$pred, filtered_df$target)
+      fraction = dim(filtered_df)[1]/dim(df)[1]
+      list_metrices[[i+1]] = c(p, r, a, fraction)
+   }
+   list_metrices
+}
+```
 
 1. LDA 
 
