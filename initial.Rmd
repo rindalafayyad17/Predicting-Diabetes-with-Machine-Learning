@@ -27,12 +27,12 @@ library(tibble)
 diabetes <- read.csv(file = "diabetes_012_health_indicators_BRFSS2015.csv", header = TRUE)
 #View(diabetes)
 
-factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
-
-#making the variables as factors
-for (i in factor_variables){
-  diabetes[,i] <- as.factor(diabetes[,i])
-}
+# factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
+# 
+# #making the variables as factors
+# for (i in factor_variables){
+#   diabetes[,i] <- as.factor(diabetes[,i])
+# }
 ```
 
 ```{r}

@@ -18,7 +18,9 @@ library(glmnet)
 library(nnet)
 library(cvms)
 library(tibble)
+library(table1)
 ```
+
 
 
 ```{r}
@@ -40,6 +42,82 @@ diabetes$Diabetes_12 <- as.factor(diabetes$Diabetes_12)
 # for (i in factor_variables){
 #   diabetes[,i] <- as.factor(diabetes[,i])
 # }
+
+```
+
+
+Table 1:
+
+```{r}
+
+diabetes_table1 <- diabetes
+
+diabetes_table1$Diabetes_12 <- factor(diabetes_table1$Diabetes_12, levels = c("1", "2"), labels = c("Non-Diabetic or Prediabetic", "Diabetic"))
+label(diabetes_table1$Diabetes_12) <- "Diabetes Status"
+
+diabetes_table1$HighBP <- factor(diabetes_table1$HighBP, levels = c("0","1"), labels = c("No High BP", "High BP"))
+label(diabetes_table1$HighBP) <- "Blood Pressure"
+
+diabetes_table1$HighChol <- factor(diabetes_table1$HighChol, levels = c("0", "1"), labels = c("No High Cholesterol", "High Cholesterol"))
+label(diabetes_table1$HighChol) <- "Cholesterol Level"
+
+diabetes_table1$CholCheck <- factor(diabetes_table1$CholCheck, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$CholCheck) <- "Cholesterol Check in past 5 Years"
+
+diabetes_table1$Smoker <- factor(diabetes_table1$Smoker, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$Smoker) <- "Smoked At Least 100 Cigs in Lifetime"
+
+diabetes_table1$Stroke <- factor(diabetes_table1$Stroke, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$Stroke) <- "Ever Told Had a Stroke"
+
+diabetes_table1$HeartDiseaseorAttack <- factor(diabetes_table1$HeartDiseaseorAttack , levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$HeartDiseaseorAttack) <- "CHD or Myocardial Infarction"
+
+diabetes_table1$PhysActivity <- factor(diabetes_table1$PhysActivity , levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$PhysActivity) <- "Physical Activity in Past 30 Days"
+
+diabetes_table1$Fruits <- factor(diabetes_table1$Fruits, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$Fruits) <- "Consume At Least 1 Fruit per Day"
+
+diabetes_table1$Veggies <- factor(diabetes_table1$Veggies, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$Veggies) <- "Consume At Least 1 Vegetable per Day"
+
+diabetes_table1$HvyAlcoholConsump <- factor(diabetes_table1$HvyAlcoholConsump, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$HvyAlcoholConsump) <- "Heavy Drinker"
+
+diabetes_table1$AnyHealthcare <- factor(diabetes_table1$AnyHealthcare, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$AnyHealthcare) <- "Have Any Kind of Health Care Coverage"
+
+diabetes_table1$NoDocbcCost <- factor(diabetes_table1$NoDocbcCost, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$NoDocbcCost) <- "Could Not See a Doctor in Past 12 Months Due To Cost"
+
+diabetes_table1$GenHlth <- factor(diabetes_table1$GenHlth, levels = c("1", "2", "3", "4", "5"), labels = c("Excellent", "Very Good", "Good", "Fair", "Poor"))
+label(diabetes_table1$GenHlth) <- "General Health Status"
+
+label(diabetes_table1$MentHlth) <- "Nb Days Mental Health Not Good in Past 30 Days"
+
+label(diabetes_table1$PhysHlth) <- "Nb Days Physical Health Not Good in Past 30 Days"
+
+diabetes_table1$DiffWalk <- factor(diabetes_table1$DiffWalk, levels = c("0", "1"), labels = c("No", "Yes"))
+label(diabetes_table1$DiffWalk) <- "Serious Difficulty Walking or Climbing Stairs"
+
+diabetes_table1$Sex <- factor(diabetes_table1$Sex, levels = c("0", "1"), labels = c("Female", "Male"))
+label(diabetes_table1$Sex) <- "Sex Assigned at Birth"
+
+diabetes_table1$AgeBinary <- ifelse(diabetes_table1$Age < 9, "Young", "Old")
+diabetes_table1$AgeBinary <- factor(diabetes_table1$AgeBinary, levels = c("Young", "Old"), labels = c("Less Than 60 Years Old", "At Least 60 Years Old"))
+label(diabetes_table1$AgeBinary) <- "Age"
+
+diabetes_table1$Education <- factor(diabetes_table1$Education, levels = c("1","2", "3", "4", "5", "6"), labels = c("Never Attended School", "Grades 1 Through 8 (Elementary)", "Grades 9 Through 11 (Some High School)", "Grade 12 or GED (High School Graduate)", "1 to 3 Years of College (Some College or Technical School)", " 4 or More Years of College (College Graduate)"))
+label(diabetes_table1$Education) <- "Highest Education Level"
+
+diabetes_table1$IncomeBinary <- ifelse(diabetes_table1$Income < 6, "Low", "High")
+diabetes_table1$IncomeBinary <- factor(diabetes_table1$IncomeBinary, levels = c("Low", "High"), labels = c("At Most $35,000", "More Than $35,000"))
+label(diabetes_table1$IncomeBinary) <- "Annual Income"
+
+
+table1(~ Sex + AgeBinary + HighBP + HighChol + CholCheck + BMI + Smoker + Stroke + HeartDiseaseorAttack + PhysActivity + Fruits + Veggies + HvyAlcoholConsump + AnyHealthcare + NoDocbcCost + GenHlth + MentHlth + PhysHlth + DiffWalk  + Education +  IncomeBinary | Diabetes_12, data = diabetes_table1, overall = "Total")
+
 
 ```
 
