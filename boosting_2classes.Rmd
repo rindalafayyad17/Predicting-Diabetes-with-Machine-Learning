@@ -72,19 +72,21 @@ test_error_boost <- vector()
 
 #Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
 
+
+
 for (i in 1:length(lambdas)){
 
   #fitting boosting model
-   boost_fit <- gbm(Diabetes_12 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = lambdas[i])
+   boost_fit <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1))  ~ ., data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = lambdas[i])
 
    #training error
    phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
-   fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
+   fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1) #picking the class with the highest probability
    train_error_boost[i] <- mean(fhat_train_boost != ytrain)
 
    #test error
    phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
-   fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
+   fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
    test_error_boost[i] <- mean(fhat_test_boost != ytest)
 
  }
@@ -122,16 +124,17 @@ minlambda
 
 ```{r}
 # Running boostin model with minlambda 
-boost_fit_best <- gbm(Diabetes_12 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = minlambda)
+
+boost_fit_best <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1)) ~ . , data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = minlambda)
 
 #training error
 phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
-fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
+fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1)#picking the class with the highest probability
 train_error_boost <- mean(fhat_train_boost != ytrain)
 
 #test error
 phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
-fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
+fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
 test_error_boost <- mean(fhat_test_boost != ytest)
 ```
 
