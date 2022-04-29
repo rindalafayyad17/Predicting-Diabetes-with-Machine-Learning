@@ -1,0 +1,165 @@
+---
+title: "Boosting 3 classes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+3. Boosting
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(gbm)
+library(glmnet)
+library(nnet)
+library(cvms)
+library(tibble)
+```
+
+
+```{r}
+
+#Loading the dataset 
+
+diabetes <- read.csv(file = "diabetes_012_health_indicators_BRFSS2015.csv", header = TRUE)
+#View(diabetes)
+
+# factor_variables <- c(1:4,6:15,18:22) #the columns that should be factors
+# 
+# #making the variables as factors
+# for (i in factor_variables){
+#   diabetes[,i] <- as.factor(diabetes[,i])
+# }
+```
+
+```{r}
+
+set.seed(356) #Daniel's record
+
+#splitting the dataset into train and test sets
+n <- nrow(diabetes)
+train_indices <- sample(1:n, size = 0.75*n, replace = F) #picking 3/4 of the dataset to be the training set and 25% to be the test set
+
+train_set <- diabetes[train_indices, ] #training set
+ytrain <- train_set$Diabetes_012
+
+test_set <- diabetes[-train_indices, ] #test set
+ytest <- test_set$Diabetes_012
+```
+
+
+
+```{r}
+#creating a vector of lambdas for the boosting model
+powers <- seq(-10, 0, by = 0.2)
+lambdas <- 10^powers
+
+train_error_boost <- vector()
+test_error_boost <- vector()
+
+#Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
+
+for (i in 1:length(lambdas)){
+
+  #fitting boosting model
+   boost_fit <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = lambdas[i])
+
+   #training error
+   phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+   fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
+   train_error_boost[i] <- mean(fhat_train_boost != ytrain)
+
+   #test error
+   phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+   fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
+   test_error_boost[i] <- mean(fhat_test_boost != ytest)
+
+ }
+
+#creating a data frame that has the train and test errors for each lambda
+Errors <- data.frame(Lambda = lambdas, trainError = train_error_boost, testError = test_error_boost)
+```
+
+
+```{r}
+
+#Plotting Training MSE vs lambda
+Errors %>% ggplot(aes(x = Lambda, y = trainError))+
+  geom_point(color = "cyan4", lwd = 1)+
+  labs(x = "Shrinkage Parameter", y = "Training Error", title = "Training MSE for Different Values of the Shrinkage Parameter")+
+  theme_bw()
+
+#Plotting Test MSE vs lambda
+Errors %>% ggplot(aes(x = Lambda, y = testError))+
+  geom_point(color = "cyan4", lwd = 1)+
+  labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
+  theme_bw()
+
+```
+
+
+```{r}
+
+#finding which lambda leads to the lowest test error
+mintestError <- Errors$testError[which.min(Errors$testError)]
+mintestError
+minlambda <- Errors$Lambda[which.min(Errors$testError)]
+minlambda
+```
+
+```{r}
+# Running boostin model with minlambda 
+boost_fit_best <- gbm(Diabetes_012 ~ ., data = train_set, distribution = "multinomial", n.trees = 500, shrinkage = minlambda)
+
+#training error
+phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+fhat_train_boost <- apply(phat_train_boost, 1, which.max) - 1 #picking the class with the highest probability
+train_error_boost <- mean(fhat_train_boost != ytrain)
+
+#test error
+phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+fhat_test_boost <- apply(phat_test_boost, 1, which.max) - 1 #picking the class with the highest probability
+test_error_boost <- mean(fhat_test_boost != ytest)
+```
+
+```{r}
+# Boost train 3x3 confusion matrix
+
+train.matrix.boost <- as_tibble(table(ytrain, fhat_train_boost))
+
+plot_confusion_matrix(train.matrix.boost, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Boost test 3x3 confusion matrix
+
+test.matrix.boost <- as_tibble(table(ytest, fhat_test_boost))
+
+plot_confusion_matrix(test.matrix.boost, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
