@@ -63,67 +63,70 @@ ytest <- test_set$Diabetes_12
 
 
 ```{r}
-#creating a vector of lambdas for the boosting model
-powers <- seq(-10, 0, by = 0.2)
-lambdas <- 10^powers
-
-train_error_boost <- vector()
-test_error_boost <- vector()
-
-#Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
-
-
-
-for (i in 1:length(lambdas)){
-
-  #fitting boosting model
-   boost_fit <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1))  ~ ., data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = lambdas[i])
-
-   #training error
-   phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
-   fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1) #picking the class with the highest probability
-   train_error_boost[i] <- mean(fhat_train_boost != ytrain)
-
-   #test error
-   phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
-   fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
-   test_error_boost[i] <- mean(fhat_test_boost != ytest)
-
- }
-
-#creating a data frame that has the train and test errors for each lambda
-Errors <- data.frame(Lambda = lambdas, trainError = train_error_boost, testError = test_error_boost)
+# #creating a vector of lambdas for the boosting model
+# powers <- seq(-10, 0, by = 0.2)
+# lambdas <- 10^powers
+# 
+# train_error_boost <- vector()
+# test_error_boost <- vector()
+# 
+# #Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
+# 
+# 
+# 
+# for (i in 1:length(lambdas)){
+# 
+#   #fitting boosting model
+#    boost_fit <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1))  ~ ., data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = lambdas[i])
+# 
+#    #training error
+#    phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+#    fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1) #picking the class with the highest probability
+#    train_error_boost[i] <- mean(fhat_train_boost != ytrain)
+# 
+#    #test error
+#    phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+#    fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
+#    test_error_boost[i] <- mean(fhat_test_boost != ytest)
+# 
+#  }
+# 
+# #creating a data frame that has the train and test errors for each lambda
+# Errors <- data.frame(Lambda = lambdas, trainError = train_error_boost, testError = test_error_boost)
 ```
 
 
 ```{r}
 
-#Plotting Training MSE vs lambda
-Errors %>% ggplot(aes(x = Lambda, y = trainError))+
-  geom_point(color = "cyan4", lwd = 1)+
-  labs(x = "Shrinkage Parameter", y = "Training Error", title = "Training MSE for Different Values of the Shrinkage Parameter")+
-  theme_bw()
-
-#Plotting Test MSE vs lambda
-Errors %>% ggplot(aes(x = Lambda, y = testError))+
-  geom_point(color = "cyan4", lwd = 1)+
-  labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
-  theme_bw()
-
-```
+# #Plotting Training MSE vs lambda
+# Errors %>% ggplot(aes(x = Lambda, y = trainError))+
+#   geom_point(color = "cyan4", lwd = 1)+
+#   labs(x = "Shrinkage Parameter", y = "Training Error", title = "Training MSE for Different Values of the Shrinkage Parameter")+
+#   theme_bw()
+# 
+# #Plotting Test MSE vs lambda
+# Errors %>% ggplot(aes(x = Lambda, y = testError))+
+#   geom_point(color = "cyan4", lwd = 1)+
+#   labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
+#   theme_bw()
+# 
+# ```
 
 
 ```{r}
-
-#finding which lambda leads to the lowest test error
-mintestError <- Errors$testError[which.min(Errors$testError)]
-mintestError
-minlambda <- Errors$Lambda[which.min(Errors$testError)]
-minlambda
+# 
+# #finding which lambda leads to the lowest test error
+# mintestError <- Errors$testError[which.min(Errors$testError)]
+# mintestError
+# minlambda <- Errors$Lambda[which.min(Errors$testError)]
+# minlambda
 ```
+
 
 ```{r}
 # Running boostin model with minlambda 
+
+minlambda <- 0.02511886
 
 boost_fit_best <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1)) ~ . , data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = minlambda)
 
@@ -131,11 +134,13 @@ boost_fit_best <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1)) ~ . ,
 phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
 fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1)#picking the class with the highest probability
 train_error_boost <- mean(fhat_train_boost != ytrain)
+train_error_boost
 
 #test error
 phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
 fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
 test_error_boost <- mean(fhat_test_boost != ytest)
+test_error_boost
 ```
 
 ```{r}
