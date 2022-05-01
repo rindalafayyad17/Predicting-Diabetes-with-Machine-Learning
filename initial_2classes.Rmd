@@ -614,6 +614,21 @@ boost.spec <- boosting.TN / (boosting.TN + boosting.FP)
 
 
 ```{r}
+# Grabbing numbers from NN file
+nn.TP <- 854
+nn.TN <- 43038
+nn.FP <- 601
+nn.FN <- 6243
+
+# Metrics
+nn.accuracy <- (nn.TP + nn.TN) / (nn.TP + nn.TN + nn.FP + nn.FN)
+nn.precision <- nn.TP / (nn.TP + nn.FP)
+nn.recall <- nn.TP / (nn.TP + nn.FN)
+nn.spec <- nn.TN / (nn.TN + nn.FP)
+```
+
+
+```{r}
 # Creating Metrics Table
 
 table2 <- data.frame(matrix(ncol = 5, nrow = 6))
@@ -624,7 +639,7 @@ table2[1,] <- c("LDA", round(lda.accuracy, digits = 2), round(lda.precision, dig
 
 
 # QDA metrics
-table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), format(round(qda.spec, digits = 2), nsmall = 2)
+table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), format(round(qda.spec, digits = 2), nsmall = 2))
 
 
 # Boosting metrics
@@ -640,7 +655,7 @@ table2[5,] <- c("Lasso", round(lasso.accuracy, digits = 2), round(lasso.precisio
 
 
 # NN metrics
-table2[6,] <- c("Neural Network", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
+table2[6,] <- c("Neural Network", round(nn.accuracy, digits = 2), round(nn.precision, digits = 2), round(nn.recall, digits = 2), round(nn.spec, digits = 2))
 
 
 
