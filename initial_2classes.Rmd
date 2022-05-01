@@ -19,6 +19,8 @@ library(nnet)
 library(cvms)
 library(tibble)
 library(table1)
+library(caret)
+library(ISLR)
 ```
 
 
@@ -44,6 +46,7 @@ diabetes$Diabetes_12 <- as.factor(diabetes$Diabetes_12)
 # }
 
 ```
+
 
 
 Table 1:
@@ -302,7 +305,15 @@ plot_confusion_matrix(test.matrix.lda,
                         tc_tile_border_color = "black"
                         )
                       )
+
+lda.cm <- confusionMatrix(fhat_test_lda, ytest, positive = "2")
+lda.accuracy <- lda.cm$overall[1]
+lda.precision <- lda.cm$byClass[3]
+lda.recall <- lda.cm$byClass[1]
+lda.spec <- lda.cm$byClass[2]
 ```
+
+
 
 
 
@@ -365,6 +376,12 @@ plot_confusion_matrix(test.matrix.qda,
                         tc_tile_border_color = "black"
                         )
                       )
+
+qda.cm <- confusionMatrix(fhat_test_qda, ytest, positive = "2")
+qda.accuracy <- qda.cm$overall[1]
+qda.precision <- qda.cm$byClass[3]
+qda.recall <- qda.cm$byClass[1]
+qda.spec <- qda.cm$byClass[2]
 ```
 
 interesting that QDA is correctly predicting more people who actually have diabetes (and is also falsely predicting too many people to have diabetes). this might actually be more useful
@@ -432,6 +449,12 @@ plot_confusion_matrix(test.matrix.logit,
                         tc_tile_border_color = "black"
                         )
                       )
+
+logit.cm <- confusionMatrix(as.factor(fhat_test_logit), ytest, positive = "2")
+logit.accuracy <- logit.cm$overall[1]
+logit.precision <- logit.cm$byClass[3]
+logit.recall <- logit.cm$byClass[1]
+logit.spec <- logit.cm$byClass[2]
 ```
 
 
@@ -532,7 +555,7 @@ test_error_lasso
 ```
 
 ```{r}
-# Lasso train 2x3 confusion matrix
+# Lasso train 2x2 confusion matrix
 
 train.matrix.lasso <- as_tibble(table(ytrain, fhat_train_lasso))
 
@@ -550,7 +573,7 @@ plot_confusion_matrix(train.matrix.lasso,
                       )
 
 
-# Lasso test 3x3 confusion matrix
+# Lasso test 2x2 confusion matrix
 
 test.matrix.lasso <- as_tibble(table(ytest, fhat_test_lasso))
 
@@ -566,5 +589,46 @@ plot_confusion_matrix(test.matrix.lasso,
                         tc_tile_border_color = "black"
                         )
                       )
+
+lasso.cm <- confusionMatrix(as.factor(fhat_test_lasso), ytest, positive = "2")
+lasso.accuracy <- lasso.cm$overall[1]
+lasso.precision <- lasso.cm$byClass[3]
+lasso.recall <- lasso.cm$byClass[1]
+lasso.spec <- lasso.cm$byClass[2]
+```
+
+
+```{r}
+# Creating Metrics Table
+
+table2 <- data.frame(matrix(ncol = 5, nrow = 6))
+colnames(table2) <- c("Model", "Accuracy", "Precision", "Recall", "Specificity")
+
+# LDA metrics
+table2[1,] <- c("LDA", round(lda.accuracy, digits = 2), round(lda.precision, digits = 2), round(lda.recall, digits = 2), round(lda.spec, digits = 2))
+
+
+# QDA metrics
+table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), round(qda.spec, digits = 2))
+
+
+# Logistic metrics
+table2[3,] <- c("Logistic", round(logit.accuracy, digits = 2), round(logit.precision, digits = 2), round(logit.recall, digits = 2), round(logit.spec, digits = 2))
+
+
+# Lasso metrics
+table2[4,] <- c("Lasso", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
+
+
+# Boosting metrics
+table2[5,] <- c("Boosting", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
+
+
+# NN metrics
+table2[6,] <- c("Neural Network", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
+
+
+
+table2
 ```
 
