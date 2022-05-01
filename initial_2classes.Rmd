@@ -599,6 +599,21 @@ lasso.spec <- lasso.cm$byClass[2]
 
 
 ```{r}
+# Grabbing numbers from boosting html file
+boosting.TP <- 1094
+boosting.TN <- 53910
+boosting.FP <- 772
+boosting.FN <- 7644
+
+# Metrics
+boost.accuracy <- (boosting.TP + boosting.TN) / (boosting.TP + boosting.TN + boosting.FP + boosting.FN)
+boost.precision <- boosting.TP / (boosting.TP + boosting.FP)
+boost.recall <- boosting.TP / (boosting.TP + boosting.FN)
+boost.spec <- boosting.TN / (boosting.TN + boosting.FP)
+```
+
+
+```{r}
 # Creating Metrics Table
 
 table2 <- data.frame(matrix(ncol = 5, nrow = 6))
@@ -612,16 +627,16 @@ table2[1,] <- c("LDA", round(lda.accuracy, digits = 2), round(lda.precision, dig
 table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), round(qda.spec, digits = 2))
 
 
+# Boosting metrics
+table2[3,] <- c("Boosting", round(boost.accuracy, digits = 2), round(boost.precision, digits = 2), round(boost.recall, digits = 2), round(boost.spec, digits = 2))
+
+
 # Logistic metrics
-table2[3,] <- c("Logistic", round(logit.accuracy, digits = 2), round(logit.precision, digits = 2), round(logit.recall, digits = 2), round(logit.spec, digits = 2))
+table2[4,] <- c("Logistic", round(logit.accuracy, digits = 2), round(logit.precision, digits = 2), round(logit.recall, digits = 2), round(logit.spec, digits = 2))
 
 
 # Lasso metrics
-table2[4,] <- c("Lasso", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
-
-
-# Boosting metrics
-table2[5,] <- c("Boosting", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
+table2[5,] <- c("Lasso", round(lasso.accuracy, digits = 2), round(lasso.precision, digits = 2), round(lasso.recall, digits = 2), round(lasso.spec, digits = 2))
 
 
 # NN metrics
