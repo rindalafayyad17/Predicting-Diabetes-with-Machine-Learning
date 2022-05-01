@@ -662,3 +662,14 @@ table2[6,] <- c("Neural Network", round(nn.accuracy, digits = 2), round(nn.preci
 table2
 ```
 
+
+```{r}
+library(gt)
+
+table2 %>%
+  gt() %>%
+  tab_header(
+    title = md("**Overall Metrics for Various Models**")
+  )
+```
+
