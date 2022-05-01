@@ -624,7 +624,7 @@ table2[1,] <- c("LDA", round(lda.accuracy, digits = 2), round(lda.precision, dig
 
 
 # QDA metrics
-table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), format(round(qda.spec, digits = 2), nsmall = 2))
+table2[2,] <- c("QDA", round(qda.accuracy, digits = 2), round(qda.precision, digits = 2), round(qda.recall, digits = 2), format(round(qda.spec, digits = 2), nsmall = 2)
 
 
 # Boosting metrics
