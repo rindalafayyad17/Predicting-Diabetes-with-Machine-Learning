@@ -375,6 +375,8 @@ test_error_lasso
 ```{r}
 # Lasso train 3x3 confusion matrix
 
+fhat_train_lasso <- factor(fhat_train_lasso, levels = c(0,1,2)) # creating empty level "1"
+
 train.matrix.lasso <- as_tibble(table(ytrain, fhat_train_lasso))
 
 plot_confusion_matrix(train.matrix.lasso, 
@@ -393,6 +395,9 @@ plot_confusion_matrix(train.matrix.lasso,
 
 # Lasso test 3x3 confusion matrix
 
+fhat_test_lasso <- factor(fhat_test_lasso, levels = c(0,1,2)) # creating empty level "1"
+
+
 test.matrix.lasso <- as_tibble(table(ytest, fhat_test_lasso))
 
 plot_confusion_matrix(test.matrix.lasso, 
@@ -407,4 +412,5 @@ plot_confusion_matrix(test.matrix.lasso,
                         tc_tile_border_color = "black"
                         )
                       )
+
 ```
