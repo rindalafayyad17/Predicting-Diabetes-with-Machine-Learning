@@ -19,6 +19,10 @@ library(nnet)
 library(cvms)
 library(tibble)
 library(table1)
+#library("shapper")
+#install_shap()
+library(fastshap)
+library(caret)
 ```
 
 
@@ -147,8 +151,6 @@ get_recall <- function(pred, target){
    FP = sum((pred==2) & (target==1))
    FN = sum((pred==1) & (target==2))
    recall = TP/(TP+FN)
-   precision = TP/(TP+FP)
-   accuracy = (TP+TN)/(TP+TN+FP+FN)
    recall
 }
 
@@ -157,8 +159,8 @@ get_precision <- function(pred, target){
    TN = sum((pred==1) & (target==1))
    FP = sum((pred==2) & (target==1))
    FN = sum((pred==1) & (target==2))
-   accuracy = (TP+TN)/(TP+TN+FP+FN)
-   accuracy
+   precision = TP/(TP+FP)
+   precision
 }
 
 get_accuracy <- function(pred, target){
@@ -175,15 +177,17 @@ get_accuracy <- function(pred, target){
 ```{r}
 evaluate_on_income <- function(pred, target, income) {
    df <- data.frame(pred, target, income)
+   df$income = ifelse(df$income < 6, 0, 1)
+
    colnames(df) <- c('pred','target','income')
    list_metrices <- list()
-   for (i in (1:8)){
+   for (i in (0:1)){
       filtered_df = df[df$income==i, ]
       p = get_precision(filtered_df$pred, filtered_df$target)
       r = get_recall(filtered_df$pred, filtered_df$target)
       a = get_accuracy(filtered_df$pred, filtered_df$target)
       fraction = dim(filtered_df)[1]/dim(df)[1]
-      list_metrices[[i]] = c(p, r, a, fraction)
+      list_metrices[[i+1]] = c(p, r, a, fraction)
    }
    list_metrices
 }
@@ -193,11 +197,11 @@ evaluate_on_income <- function(pred, target, income) {
 ```{r}
 evaluate_on_education<- function(pred, target, education) {
    df <- data.frame(pred, target, education)
+   df$education = ifelse(df$education < 5, 1, 2)
    colnames(df) <- c('pred','target','education')
    list_metrices <- list()
-   for (i in (1:6)){
+   for (i in (1:2)){
       filtered_df = df[df$education==i, ]
-      print(dim(filtered_df)[1])
       p = get_precision(filtered_df$pred, filtered_df$target)
       r = get_recall(filtered_df$pred, filtered_df$target)
       a = get_accuracy(filtered_df$pred, filtered_df$target)
@@ -211,11 +215,11 @@ evaluate_on_education<- function(pred, target, education) {
 ```{r}
 evaluate_on_age<- function(pred, target, age) {
    df <- data.frame(pred, target, age)
+   df$age = ifelse(df$age < 9, 1, 2)
    colnames(df) <- c('pred','target','age')
    list_metrices <- list()
-   for (i in (1:13)){
+   for (i in (1:2)){
       filtered_df = df[df$age==i, ]
-      print(dim(filtered_df)[1])
       p = get_precision(filtered_df$pred, filtered_df$target)
       r = get_recall(filtered_df$pred, filtered_df$target)
       a = get_accuracy(filtered_df$pred, filtered_df$target)
@@ -260,6 +264,24 @@ fhat_test_lda <- predict(lda_fit, newdata = test_set, method = "plug-in")$class
 test_error_lda <- mean(fhat_test_lda != ytest) #test error
 test_error_lda 
 ```
+```{r}
+# Get precision, recall, accuracy and fraction for Sex, Healthcare Coverage, Income, Education and Age
+evaluate_on_binary_variables(fhat_test_lda, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_lda, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_lda, ytest, test_set$Income)
+evaluate_on_education(fhat_test_lda, ytest, test_set$Education)
+evaluate_on_age(fhat_test_lda, ytest, test_set$Age)
+```
+```{r}
+pred_fun_lda <- function(model_fit, newdata) {
+  predict(model_fit, newdata, n.trees = 500, type = "response")$posterior[,2]
+}
+
+shap <- explain(lda_fit, X = test_set[, -1], pred_wrapper = pred_fun_lda, nsim = 20)
+library(ggplot2)
+autoplot(shap)
+```
+
 
 
 ```{r}
@@ -331,6 +353,24 @@ test_error_qda
 ```
 
 ```{r}
+evaluate_on_binary_variables(fhat_test_qda, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_qda, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_qda, ytest, test_set$Income)
+evaluate_on_education(fhat_test_qda, ytest, test_set$Education)
+evaluate_on_age(fhat_test_qda, ytest, test_set$Age)
+```
+
+```{r}
+pred_fun_lda <- function(model_fit, newdata) {
+  predict(model_fit, newdata, n.trees = 500, type = "response")$posterior[,2]
+}
+
+shap <- explain(qda_fit, X = test_set[, -1], pred_wrapper = pred_fun_lda, nsim = 20)
+library(ggplot2)
+autoplot(shap)
+```
+
+```{r}
 # QDA train 2x2 confusion matrix
 
 train.matrix.qda <- as_tibble(table(ytrain, fhat_train_qda))
@@ -394,8 +434,22 @@ test_error_logit <- mean(fhat_test_logit != ytest)
 test_error_logit
 
 ```
+```{r}
+evaluate_on_binary_variables(fhat_test_logit, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_logit, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_logit, ytest, test_set$Income)
+evaluate_on_education(fhat_test_logit, ytest, test_set$Education)
+evaluate_on_age(fhat_test_logit, ytest, test_set$Age)
+```
 
 can use a different cutoff for logistic!
+```{r}
+lr_importance = (varImp(logit_fit, scale = FALSE))
+lr_importance <- cbind(newColName = rownames(lr_importance), lr_importance)
+names(lr_importance) <- c("Feature", "Coefficient")
+lr_importance <- lr_importance[order(lr_importance$Coefficient, decreasing = TRUE),]
+ggplot(lr_importance, aes(x = Coefficient, y = reorder(Feature, Coefficient)))+geom_col()+xlab("Maginitude of Coefficient") + ylab("Feature")
+```
 
 ```{r}
 # logistic train 2x2 confusion matrix
@@ -530,6 +584,25 @@ fhat_test_lasso <- predict(lasso_fit, s = bestlambda, newx = xtest, type = "clas
 test_error_lasso <- mean(fhat_test_lasso != ytest)
 test_error_lasso
 ```
+```{r}
+evaluate_on_binary_variables(fhat_test_lasso, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_lasso, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_lasso, ytest, test_set$Income)
+evaluate_on_education(fhat_test_lasso, ytest, test_set$Education)
+evaluate_on_age(fhat_test_lasso,  ytest, test_set$Age)
+```
+
+```{r}
+lr_importance = (varImp(lasso_fit, lambda = bestlambda, scale = FALSE))
+lr_importance <- cbind(newColName = rownames(lr_importance), lr_importance)
+names(lr_importance) <- c("Feature", "Coefficient")
+lr_importance <- lr_importance[order(lr_importance$Coefficient, decreasing = TRUE),]
+lr_importance <- lr_importance[!lr_importance$Feature == "X.Intercept.",]
+lr_importance <- lr_importance[!lr_importance$Feature == "X.Intercept..1",]
+
+ggplot(lr_importance, aes(x = Coefficient, y = reorder(Feature, Coefficient)))+geom_col()+xlab("Maginitude of Coefficient") + ylab("Feature")
+```
+
 
 ```{r}
 # Lasso train 2x3 confusion matrix

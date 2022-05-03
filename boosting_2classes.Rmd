@@ -18,6 +18,8 @@ library(nnet)
 library(cvms)
 library(tibble)
 library(table1)
+library("shapper")
+install_shap()
 ```
 
 
@@ -110,7 +112,7 @@ ytest <- test_set$Diabetes_12
 #   labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
 #   theme_bw()
 # 
-# ```
+```
 
 
 ```{r}
@@ -141,6 +143,13 @@ phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "resp
 fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
 test_error_boost <- mean(fhat_test_boost != ytest)
 test_error_boost
+```
+```{r}
+evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_boost, ytest, test_set$Income)
+evaluate_on_education(fhat_test_boost, ytest, test_set$Education)
+evaluate_on_age(fhat_test_boost, ytest, test_set$Age)
 ```
 
 ```{r}
@@ -178,5 +187,21 @@ plot_confusion_matrix(test.matrix.boost,
                         tc_tile_border_color = "black"
                         )
                       )
+```
+
+```{r}
+shap_values=predict(boost_fit_best, test_set, predcontrib = TRUE, approxcontrib = F)
+```
+
+```{r}
+
+pred_fun <- function(boost_fit_best, newdata) {
+  predict(boost_fit_best, newdata, n.trees = 500, type = "response")
+}
+
+shap <- explain(boost_fit_best, X = test_set[, -1], pred_wrapper = pred_fun, nsim = 51)
+library(ggplot2)
+autoplot(shap)
+
 ```
 
