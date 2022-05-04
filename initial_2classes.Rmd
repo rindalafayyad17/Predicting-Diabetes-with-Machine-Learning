@@ -19,11 +19,13 @@ library(nnet)
 library(cvms)
 library(tibble)
 library(table1)
-
 library(fastshap)
 library(caret)
 library(caret)
 library(ISLR)
+library(gt)
+library("shapper")
+#install_shap()
 ```
 
 
@@ -256,16 +258,45 @@ evaluate_on_binary_variables <- function(pred, target, variable_values, variable
 
 lda_fit <- lda(Diabetes_12 ~ ., data = train_set, method = "mle")
 
-#predictions using training set
-fhat_train_lda <- predict(lda_fit, newdata = train_set, method = "plug-in")$class
-train_error_lda <- mean(fhat_train_lda != ytrain) #training error
-train_error_lda 
 
-#predictions using test set
-fhat_test_lda <- predict(lda_fit, newdata = test_set, method = "plug-in")$class
-test_error_lda <- mean(fhat_test_lda != ytest) #test error
-test_error_lda 
+cutoffs <- seq(0.1, 0.5, by = 0.05)
+table_lda <- as.data.frame(matrix(nrow = 9, ncol = 5))
+colnames(table_lda) <- c("Cutoff", "Accuracy", "Precision", "Recall", "Specificity")
+table_lda[,1] <- cutoffs
+
+for (i in 1:length(cutoffs)){
+   
+   #predictions using training set
+   phat_train_lda <- predict(lda_fit, newdata = train_set, method = "plug-in")$posterior[,2]
+   fhat_train_lda <- ifelse(phat_train_lda > cutoffs[i], 2, 1)
+   train_error_lda <- mean(fhat_train_lda != ytrain) #training error
+   #train_error_lda 
+   
+   #predictions using test set
+   phat_test_lda <- predict(lda_fit, newdata = test_set, method = "plug-in")$posterior[,2]
+   fhat_test_lda <- ifelse(phat_test_lda > cutoffs[i], 2, 1)
+   test_error_lda <- mean(fhat_test_lda != ytest) #test error
+   #test_error_lda 
+   
+   lda.cm <- confusionMatrix(as.factor(fhat_test_lda), ytest, positive = "2")
+   lda.accuracy <- lda.cm$overall[1]
+   lda.precision <- lda.cm$byClass[3]
+   lda.recall <- lda.cm$byClass[1]
+   lda.spec <- lda.cm$byClass[2]
+   
+   table_lda[i,2] <- lda.accuracy
+   table_lda[i,3] <- lda.precision
+   table_lda[i,4] <- lda.recall 
+   table_lda[i,5] <- lda.spec
+
+   
+}
+
+table_lda[,2:5] <- round(table_lda[,2:5], digits = 2)
+#table_lda
 ```
+
+
 ```{r}
 # Get precision, recall, accuracy and fraction for Sex, Healthcare Coverage, Income, Education and Age
 evaluate_on_binary_variables(fhat_test_lda, ytest, test_set$Sex, "Sex")
@@ -326,12 +357,12 @@ plot_confusion_matrix(test.matrix.lda,
                         tc_tile_border_color = "black"
                         )
                       )
-
-lda.cm <- confusionMatrix(fhat_test_lda, ytest, positive = "2")
-lda.accuracy <- lda.cm$overall[1]
-lda.precision <- lda.cm$byClass[3]
-lda.recall <- lda.cm$byClass[1]
-lda.spec <- lda.cm$byClass[2]
+# 
+# lda.cm <- confusionMatrix(fhat_test_lda, ytest, positive = "2")
+# lda.accuracy <- lda.cm$overall[1]
+# lda.precision <- lda.cm$byClass[3]
+# lda.recall <- lda.cm$byClass[1]
+# lda.spec <- lda.cm$byClass[2]
 ```
 
 
@@ -351,15 +382,41 @@ lda.spec <- lda.cm$byClass[2]
 
 qda_fit <- qda(Diabetes_12 ~ ., data = train_set, method = "mle")
 
-#predictions using training set
-fhat_train_qda <- predict(qda_fit, newdata = train_set, method = "plug-in")$class
-train_error_qda <- mean(fhat_train_qda != ytrain)
-train_error_qda 
+table_qda <- as.data.frame(matrix(nrow = 9, ncol = 5))
+colnames(table_qda) <- c("Cutoff", "Accuracy", "Precision", "Recall", "Specificity")
+table_qda[,1] <- cutoffs
 
-#predictions using test set
-fhat_test_qda <- predict(qda_fit, newdata = test_set, method = "plug-in")$class
-test_error_qda <- mean(fhat_test_qda != ytest)
-test_error_qda 
+for (i in 1:length(cutoffs)){
+   
+   #predictions using training set
+   phat_train_qda <- predict(qda_fit, newdata = train_set, method = "plug-in")$posterior[,2]
+   fhat_train_qda <- ifelse(phat_train_qda > cutoffs[i], 2, 1)
+   train_error_qda <- mean(fhat_train_qda != ytrain) #training error
+   #train_error_lda 
+   
+   #predictions using test set
+   phat_test_qda <- predict(qda_fit, newdata = test_set, method = "plug-in")$posterior[,2]
+   fhat_test_qda <- ifelse(phat_test_qda > cutoffs[i], 2, 1)
+   test_error_qda <- mean(fhat_test_qda != ytest) #test error
+   #test_error_lda 
+   
+   qda.cm <- confusionMatrix(as.factor(fhat_test_qda), ytest, positive = "2")
+   qda.accuracy <- qda.cm$overall[1]
+   qda.precision <- qda.cm$byClass[3]
+   qda.recall <- qda.cm$byClass[1]
+   qda.spec <- qda.cm$byClass[2]
+   
+   table_qda[i,2] <- qda.accuracy
+   table_qda[i,3] <- qda.precision
+   table_qda[i,4] <- qda.recall 
+   table_qda[i,5] <- qda.spec
+
+   
+}
+
+table_qda[,2:5] <- round(table_qda[,2:5], digits = 2)
+#table_qda
+
 ```
 
 ```{r}
@@ -416,11 +473,11 @@ plot_confusion_matrix(test.matrix.qda,
                         )
                       )
 
-qda.cm <- confusionMatrix(fhat_test_qda, ytest, positive = "2")
-qda.accuracy <- qda.cm$overall[1]
-qda.precision <- qda.cm$byClass[3]
-qda.recall <- qda.cm$byClass[1]
-qda.spec <- qda.cm$byClass[2]
+# qda.cm <- confusionMatrix(fhat_test_qda, ytest, positive = "2")
+# qda.accuracy <- qda.cm$overall[1]
+# qda.precision <- qda.cm$byClass[3]
+# qda.recall <- qda.cm$byClass[1]
+# qda.spec <- qda.cm$byClass[2]
 ```
 
 interesting that QDA is correctly predicting more people who actually have diabetes (and is also falsely predicting too many people to have diabetes). this might actually be more useful
@@ -437,19 +494,46 @@ interesting that QDA is correctly predicting more people who actually have diabe
 #Fitting a multinomial model with all variables as predictors.
 logit_fit <- glm(Diabetes_12 ~ . , family = binomial(), data = train_set)
 
-#training error
-phat_train_logit <- predict(logit_fit, train_set, type = "response")
-fhat_train_logit <- ifelse(phat_train_logit > 0.5, 2, 1)
-train_error_logit <- mean(fhat_train_logit != ytrain)
-train_error_logit 
 
-#test error
-phat_test_logit <- predict(logit_fit, test_set)
-fhat_test_logit <- ifelse(phat_test_logit > 0.5, 2, 1)
-test_error_logit <- mean(fhat_test_logit != ytest)
-test_error_logit
+table_logit <- as.data.frame(matrix(nrow = 9, ncol = 5))
+colnames(table_logit) <- c("Cutoff", "Accuracy", "Precision", "Recall", "Specificity")
+table_logit[,1] <- cutoffs
+
+for (i in 1:length(cutoffs)){
+   
+   #training error
+   phat_train_logit <- predict(logit_fit, train_set, type = "response")
+   fhat_train_logit <- ifelse(phat_train_logit > cutoffs[i], 2, 1)
+   train_error_logit <- mean(fhat_train_logit != ytrain)
+   #train_error_logit 
+   
+   #test error
+   phat_test_logit <- predict(logit_fit, test_set)
+   fhat_test_logit <- ifelse(phat_test_logit > cutoffs[i], 2, 1)
+   test_error_logit <- mean(fhat_test_logit != ytest)
+   #test_error_logit
+   
+   logit.cm <- confusionMatrix(as.factor(fhat_test_logit), ytest, positive = "2")
+   logit.accuracy <- logit.cm$overall[1]
+   logit.precision <- logit.cm$byClass[3]
+   logit.recall <- logit.cm$byClass[1]
+   logit.spec <- logit.cm$byClass[2]
+   
+   table_logit[i,2] <- logit.accuracy
+   table_logit[i,3] <- logit.precision
+   table_logit[i,4] <- logit.recall 
+   table_logit[i,5] <- logit.spec
+
+   
+}
+
+table_logit[,2:5] <- round(table_logit[,2:5], digits = 2)
+#table_logit
+
 
 ```
+
+
 ```{r}
 evaluate_on_binary_variables(fhat_test_logit, ytest, test_set$Sex, "Sex")
 evaluate_on_binary_variables(fhat_test_logit, ytest, test_set$AnyHealthcare, "AnyHealthcare")
@@ -502,12 +586,12 @@ plot_confusion_matrix(test.matrix.logit,
                         tc_tile_border_color = "black"
                         )
                       )
-
-logit.cm <- confusionMatrix(as.factor(fhat_test_logit), ytest, positive = "2")
-logit.accuracy <- logit.cm$overall[1]
-logit.precision <- logit.cm$byClass[3]
-logit.recall <- logit.cm$byClass[1]
-logit.spec <- logit.cm$byClass[2]
+# 
+# logit.cm <- confusionMatrix(as.factor(fhat_test_logit), ytest, positive = "2")
+# logit.accuracy <- logit.cm$overall[1]
+# logit.precision <- logit.cm$byClass[3]
+# logit.recall <- logit.cm$byClass[1]
+# logit.spec <- logit.cm$byClass[2]
 ```
 
 
@@ -590,22 +674,56 @@ xtest <- model.matrix(Diabetes_12 ~ . , data = test_set) #creating a matrix for 
 #Takes a bit of time to run 
 lasso_fit <- glmnet(xtrain, ytrain, alpha = 1, family = "multinomial")
 
-#Takes a lot of time to run.
-cv.out <- cv.glmnet(xtrain, ytrain, alpha = 1, family = "multinomial", nfolds = 5) #choosing the best lambda by cross validation. I chose K = 5 folds, because if i keep the default of K = 10, it takes FOREVER to run
+# #Takes a lot of time to run.
+# cv.out <- cv.glmnet(xtrain, ytrain, alpha = 1, family = "multinomial", nfolds = 5) #choosing the best lambda by cross validation. I chose K = 5 folds, because if i keep the default of K = 10, it takes FOREVER to run
+# 
+# bestlambda <- cv.out$lambda.min #outputting the best lambda
 
-bestlambda <- cv.out$lambda.min #outputting the best lambda
-bestlambda # = 5.28e-05
+bestlambda <- 0.000464127
 
-#training error
-fhat_train_lasso <- predict(lasso_fit, s = bestlambda, newx = xtrain, type = "class")
-train_error_lasso <- mean(fhat_train_lasso != ytrain)
-train_error_lasso
 
-#test error
-fhat_test_lasso <- predict(lasso_fit, s = bestlambda, newx = xtest, type = "class")
-test_error_lasso <- mean(fhat_test_lasso != ytest)
-test_error_lasso
+table_lasso <- as.data.frame(matrix(nrow = 9, ncol = 5))
+colnames(table_lasso) <- c("Cutoff", "Accuracy", "Precision", "Recall", "Specificity")
+table_lasso[,1] <- cutoffs
+
+for (i in 1:length(cutoffs)){
+   
+   #training error
+   phat_train_lasso <- as.data.frame(predict(lasso_fit, s = bestlambda, newx = xtrain, type = "response"))[,2]
+   fhat_train_lasso <- ifelse(phat_train_lasso > cutoffs[i], 2, 1)
+   train_error_lasso <- mean(fhat_train_lasso != ytrain)
+   #train_error_logit 
+   
+   #test error
+   phat_test_lasso <- as.data.frame(predict(lasso_fit, s = bestlambda, newx = xtest, type = "response"))[,2]
+   fhat_test_lasso <- ifelse(phat_test_lasso > cutoffs[i], 2, 1)
+   test_error_lasso <- mean(fhat_test_lasso != ytest)
+   #test_error_logit
+   
+   lasso.cm <- confusionMatrix(as.factor(fhat_test_lasso), ytest, positive = "2")
+   lasso.accuracy <- lasso.cm$overall[1]
+   lasso.precision <- lasso.cm$byClass[3]
+   lasso.recall <- lasso.cm$byClass[1]
+   lasso.spec <- lasso.cm$byClass[2]
+   
+   table_lasso[i,2] <- lasso.accuracy
+   table_lasso[i,3] <- lasso.precision
+   table_lasso[i,4] <- lasso.recall 
+   table_lasso[i,5] <- lasso.spec
+
+   
+}
+
+table_lasso[,2:5] <- round(table_lasso[,2:5], digits = 2)
+#table_lasso
+
+
+
+
+
 ```
+
+
 ```{r}
 evaluate_on_binary_variables(fhat_test_lasso, ytest, test_set$Sex, "Sex")
 evaluate_on_binary_variables(fhat_test_lasso, ytest, test_set$AnyHealthcare, "AnyHealthcare")
@@ -661,13 +779,203 @@ plot_confusion_matrix(test.matrix.lasso,
                         tc_tile_border_color = "black"
                         )
                       )
-
-lasso.cm <- confusionMatrix(as.factor(fhat_test_lasso), ytest, positive = "2")
-lasso.accuracy <- lasso.cm$overall[1]
-lasso.precision <- lasso.cm$byClass[3]
-lasso.recall <- lasso.cm$byClass[1]
-lasso.spec <- lasso.cm$byClass[2]
+# 
+# lasso.cm <- confusionMatrix(as.factor(fhat_test_lasso), ytest, positive = "2")
+# lasso.accuracy <- lasso.cm$overall[1]
+# lasso.precision <- lasso.cm$byClass[3]
+# lasso.recall <- lasso.cm$byClass[1]
+# lasso.spec <- lasso.cm$byClass[2]
 ```
+
+
+BOOSTING
+
+3. Boosting
+
+
+```{r}
+# #creating a vector of lambdas for the boosting model
+# powers <- seq(-10, 0, by = 0.2)
+# lambdas <- 10^powers
+# 
+# train_error_boost <- vector()
+# test_error_boost <- vector()
+# 
+# #Fitting a boosting model for each lambda with 500 trees. I am using all the variables as predictors. I tried 1000 trees but it was taking so much time.
+# 
+# 
+# 
+# for (i in 1:length(lambdas)){
+# 
+#   #fitting boosting model
+#    boost_fit <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1))  ~ ., data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = lambdas[i])
+# 
+#    #training error
+#    phat_train_boost <- predict(boost_fit, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+#    fhat_train_boost <- ifelse(phat_train_boost > 0.5, 2, 1) #picking the class with the highest probability
+#    train_error_boost[i] <- mean(fhat_train_boost != ytrain)
+# 
+#    #test error
+#    phat_test_boost <- predict(boost_fit, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+#    fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with the highest probability
+#    test_error_boost[i] <- mean(fhat_test_boost != ytest)
+# 
+#  }
+# 
+# #creating a data frame that has the train and test errors for each lambda
+# Errors <- data.frame(Lambda = lambdas, trainError = train_error_boost, testError = test_error_boost)
+```
+
+
+```{r}
+
+# #Plotting Training MSE vs lambda
+# Errors %>% ggplot(aes(x = Lambda, y = trainError))+
+#   geom_point(color = "cyan4", lwd = 1)+
+#   labs(x = "Shrinkage Parameter", y = "Training Error", title = "Training MSE for Different Values of the Shrinkage Parameter")+
+#   theme_bw()
+# 
+# #Plotting Test MSE vs lambda
+# Errors %>% ggplot(aes(x = Lambda, y = testError))+
+#   geom_point(color = "cyan4", lwd = 1)+
+#   labs(x = "Shrinkage Parameter", y = "Test Error", title = "Test MSE for Different Values of the Shrinkage Parameter")+
+#   theme_bw()
+# 
+```
+
+
+```{r}
+# 
+# #finding which lambda leads to the lowest test error
+# mintestError <- Errors$testError[which.min(Errors$testError)]
+# mintestError
+# minlambda <- Errors$Lambda[which.min(Errors$testError)]
+# minlambda
+```
+
+
+```{r}
+# Running boostin model with minlambda 
+
+minlambda <- 0.02511886
+
+boost_fit_best <- gbm(as.character(as.factor(as.numeric(Diabetes_12) - 1)) ~ . , data = train_set, distribution = "bernoulli", n.trees = 500, shrinkage = minlambda)
+
+
+table_boost <- as.data.frame(matrix(nrow = 9, ncol = 5))
+colnames(table_boost) <- c("Cutoff", "Accuracy", "Precision", "Recall", "Specificity")
+table_boost[,1] <- cutoffs
+
+for (i in 1:length(cutoffs)){
+   
+   #training error
+   phat_train_boost <- predict(boost_fit_best, train_set, n.trees = 500, type = "response")#getting the probabilities of each class
+   fhat_train_boost <- ifelse(phat_train_boost > cutoffs[i], 2, 1)#picking the class with the highest probability
+   train_error_boost <- mean(fhat_train_boost != ytrain)
+   train_error_boost
+   
+   #test error
+   phat_test_boost <- predict(boost_fit_best, test_set, n.trees = 500, type = "response") #getting the probabilities of each class
+   fhat_test_boost <- ifelse(phat_test_boost > cutoffs[i], 2, 1) #picking the class with the highest probability
+   test_error_boost <- mean(fhat_test_boost != ytest)
+   test_error_boost
+   
+   boost.cm <- confusionMatrix(as.factor(fhat_test_boost), ytest, positive = "2")
+   boost.accuracy <- boost.cm$overall[1]
+   boost.precision <- boost.cm$byClass[3]
+   boost.recall <- boost.cm$byClass[1]
+   boost.spec <- boost.cm$byClass[2]
+   
+   table_boost[i,2] <- boost.accuracy
+   table_boost[i,3] <- boost.precision
+   table_boost[i,4] <- boost.recall 
+   table_boost[i,5] <- boost.spec
+
+   
+}
+
+table_boost[,2:5] <- round(table_boost[,2:5], digits = 2)
+#table_lasso
+
+```
+
+
+```{r}
+evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$Sex, "Sex")
+evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$AnyHealthcare, "AnyHealthcare")
+evaluate_on_income(fhat_test_boost, ytest, test_set$Income)
+evaluate_on_education(fhat_test_boost, ytest, test_set$Education)
+evaluate_on_age(fhat_test_boost, ytest, test_set$Age)
+```
+
+```{r}
+# Boost train 2x2 confusion matrix
+
+train.matrix.boost <- as_tibble(table(ytrain, fhat_train_boost))
+
+plot_confusion_matrix(train.matrix.boost, 
+                      target_col = "ytrain", 
+                      prediction_col = "fhat_train_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+
+
+# Boost test 2x2 confusion matrix
+
+test.matrix.boost <- as_tibble(table(ytest, fhat_test_boost))
+
+plot_confusion_matrix(test.matrix.boost, 
+                      target_col = "ytest", 
+                      prediction_col = "fhat_test_boost",
+                      counts_col = "n",
+                      palette = "Greens",
+                      add_sums = TRUE,
+                      sums_settings = sum_tile_settings(
+                        palette = "Oranges",
+                        label = "Total",
+                        tc_tile_border_color = "black"
+                        )
+                      )
+```
+
+```{r}
+shap_values=predict(boost_fit_best, test_set, predcontrib = TRUE, approxcontrib = F)
+```
+
+```{r}
+
+pred_fun <- function(boost_fit_best, newdata) {
+  predict(boost_fit_best, newdata, n.trees = 500, type = "response")
+}
+
+shap <- explain(boost_fit_best, X = test_set[, -1], pred_wrapper = pred_fun, nsim = 51)
+library(ggplot2)
+autoplot(shap)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```{r}
@@ -744,4 +1052,35 @@ table2 %>%
     title = md("**Overall Metrics for Various Models**")
   )
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tables For each model and for each cutoff
+```{r}
+
+All <- rbind(table_lda, table_qda, table_logit, table_lasso, table_boost)
+All$Model <- c(rep("LDA", 9), rep("QDA", 9), rep("Logistic", 9), rep("LASSO", 9), rep("Boosting", 9))
+
+All %>% gt(groupname_col = "Model")
+
+```
+
 

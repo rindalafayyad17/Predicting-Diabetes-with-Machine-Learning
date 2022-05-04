@@ -19,7 +19,7 @@ library(cvms)
 library(tibble)
 library(table1)
 library("shapper")
-install_shap()
+#install_shap()
 ```
 
 
@@ -144,6 +144,8 @@ fhat_test_boost <- ifelse(phat_test_boost > 0.5, 2, 1) #picking the class with t
 test_error_boost <- mean(fhat_test_boost != ytest)
 test_error_boost
 ```
+
+
 ```{r}
 evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$Sex, "Sex")
 evaluate_on_binary_variables(fhat_test_boost, ytest, test_set$AnyHealthcare, "AnyHealthcare")
