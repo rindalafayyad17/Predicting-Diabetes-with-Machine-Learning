@@ -1049,7 +1049,8 @@ library(gt)
 table2 %>%
   gt() %>%
   tab_header(
-    title = md("**Overall Metrics for Various Models**")
+    title = md("**Overall Metrics for Various Models**"),
+    subtitle = md("At the default cutoff of 0.5")
   )
 ```
 
