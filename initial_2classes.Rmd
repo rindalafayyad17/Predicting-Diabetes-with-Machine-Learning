@@ -1077,8 +1077,8 @@ table2 %>%
 Tables For each model and for each cutoff
 ```{r}
 
-All <- rbind(table_lda, table_qda, table_logit, table_lasso, table_boost)
-All$Model <- c(rep("LDA", 9), rep("QDA", 9), rep("Logistic", 9), rep("LASSO", 9), rep("Boosting", 9))
+All <- rbind( table_lasso,table_lda, table_qda, table_logit, table_boost)
+All$Model <- c(rep("LASSO", 9), rep("LDA", 9), rep("QDA", 9), rep("Logistic", 9), rep("Boosting", 9))
 
 All %>% gt(groupname_col = "Model")
 
