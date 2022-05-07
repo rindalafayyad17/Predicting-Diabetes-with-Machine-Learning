@@ -1029,9 +1029,7 @@ table2[5,] <- c("Lasso", round(lasso.accuracy, digits = 2), round(lasso.precisio
 
 
 # NN metrics
-table2[6,] <- c("Neural Network", round(nn.accuracy, digits = 2), round(nn.precision, digits = 2), round(nn.recall, digits = 2), round(nn.spec, digits = 2))
-
-
+table2[6,] <- c("Neural Network", round(nn.accuracy, digits = 2), format(round(nn.precision, digits = 2), nsmall = 2), round(nn.recall, digits = 2), format(round(nn.spec, digits = 2), nsmall=2))
 
 table2
 ```

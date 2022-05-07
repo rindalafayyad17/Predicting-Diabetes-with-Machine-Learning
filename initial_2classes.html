@@ -1978,9 +1978,7 @@ table2[5,] &lt;- c(&quot;Lasso&quot;, round(lasso.accuracy, digits = 2), round(l
 
 
 # NN metrics
-table2[6,] &lt;- c(&quot;Neural Network&quot;, round(nn.accuracy, digits = 2), round(nn.precision, digits = 2), round(nn.recall, digits = 2), round(nn.spec, digits = 2))
-
-
+table2[6,] &lt;- c(&quot;Neural Network&quot;, round(nn.accuracy, digits = 2), format(round(nn.precision, digits = 2), nsmall = 2), round(nn.recall, digits = 2), format(round(nn.spec, digits = 2), nsmall=2))
 
 table2</code></pre>
 <pre><code>##            Model Accuracy Precision Recall Specificity
@@ -1989,7 +1987,7 @@ table2</code></pre>
 ## 3       Boosting     0.87      0.59   0.13        0.99
 ## 4       Logistic     0.86      0.58   0.06        0.99
 ## 5          Lasso     0.86      0.52   0.15        0.98
-## 6 Neural Network     0.86       0.7   0.03           1</code></pre>
+## 6 Neural Network     0.86      0.70   0.03        1.00</code></pre>
 <pre class="r"><code>library(gt)
 
 table2 %&gt;%
@@ -2456,9 +2454,9 @@ table2 %&gt;%
 <td class="gt_row gt_left">0.98</td></tr>
     <tr><td class="gt_row gt_left">Neural Network</td>
 <td class="gt_row gt_left">0.86</td>
-<td class="gt_row gt_left">0.7</td>
+<td class="gt_row gt_left">0.70</td>
 <td class="gt_row gt_left">0.03</td>
-<td class="gt_row gt_left">1</td></tr>
+<td class="gt_row gt_left">1.00</td></tr>
   </tbody>
   
   
