@@ -1947,17 +1947,11 @@ boost.accuracy &lt;- (boosting.TP + boosting.TN) / (boosting.TP + boosting.TN + 
 boost.precision &lt;- boosting.TP / (boosting.TP + boosting.FP)
 boost.recall &lt;- boosting.TP / (boosting.TP + boosting.FN)
 boost.spec &lt;- boosting.TN / (boosting.TN + boosting.FP)</code></pre>
-<pre class="r"><code># Grabbing numbers from NN file
-nn.TP &lt;- 854
-nn.TN &lt;- 43038
-nn.FP &lt;- 601
-nn.FN &lt;- 6243
-
-# Metrics
-nn.accuracy &lt;- (nn.TP + nn.TN) / (nn.TP + nn.TN + nn.FP + nn.FN)
-nn.precision &lt;- nn.TP / (nn.TP + nn.FP)
-nn.recall &lt;- nn.TP / (nn.TP + nn.FN)
-nn.spec &lt;- nn.TN / (nn.TN + nn.FP)</code></pre>
+<pre class="r"><code># Metrics
+nn.accuracy &lt;- 0.8627
+nn.precision &lt;- 0.7019
+nn.recall &lt;- 0.0318
+nn.spec &lt;- 0.9978</code></pre>
 <pre class="r"><code># Creating Metrics Table
 
 table2 &lt;- data.frame(matrix(ncol = 5, nrow = 6))
@@ -1995,7 +1989,7 @@ table2</code></pre>
 ## 3       Boosting     0.87      0.59   0.13        0.99
 ## 4       Logistic     0.86      0.58   0.06        0.99
 ## 5          Lasso     0.86      0.52   0.15        0.98
-## 6 Neural Network     0.87      0.59   0.12        0.99</code></pre>
+## 6 Neural Network     0.86       0.7   0.03           1</code></pre>
 <pre class="r"><code>library(gt)
 
 table2 %&gt;%
@@ -2461,18 +2455,18 @@ table2 %&gt;%
 <td class="gt_row gt_left">0.15</td>
 <td class="gt_row gt_left">0.98</td></tr>
     <tr><td class="gt_row gt_left">Neural Network</td>
-<td class="gt_row gt_left">0.87</td>
-<td class="gt_row gt_left">0.59</td>
-<td class="gt_row gt_left">0.12</td>
-<td class="gt_row gt_left">0.99</td></tr>
+<td class="gt_row gt_left">0.86</td>
+<td class="gt_row gt_left">0.7</td>
+<td class="gt_row gt_left">0.03</td>
+<td class="gt_row gt_left">1</td></tr>
   </tbody>
   
   
 </table>
 </div>
 <p>Tables For each model and for each cutoff</p>
-<pre class="r"><code>All &lt;- rbind(table_lda, table_qda, table_logit, table_lasso, table_boost)
-All$Model &lt;- c(rep(&quot;LDA&quot;, 9), rep(&quot;QDA&quot;, 9), rep(&quot;Logistic&quot;, 9), rep(&quot;LASSO&quot;, 9), rep(&quot;Boosting&quot;, 9))
+<pre class="r"><code>All &lt;- rbind( table_lasso,table_lda, table_qda, table_logit, table_boost)
+All$Model &lt;- c(rep(&quot;LASSO&quot;, 9), rep(&quot;LDA&quot;, 9), rep(&quot;QDA&quot;, 9), rep(&quot;Logistic&quot;, 9), rep(&quot;Boosting&quot;, 9))
 
 All %&gt;% gt(groupname_col = &quot;Model&quot;)</code></pre>
 <div id="jxpvxwgaao" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -2900,6 +2894,54 @@ All %&gt;% gt(groupname_col = &quot;Model&quot;)</code></pre>
   </thead>
   <tbody class="gt_table_body">
     <tr class="gt_group_heading_row">
+      <td colspan="5" class="gt_group_heading">LASSO</td>
+    </tr>
+    <tr class="gt_row_group_first"><td class="gt_row gt_right">0.10</td>
+<td class="gt_row gt_right">0.65</td>
+<td class="gt_row gt_right">0.27</td>
+<td class="gt_row gt_right">0.86</td>
+<td class="gt_row gt_right">0.62</td></tr>
+    <tr><td class="gt_row gt_right">0.15</td>
+<td class="gt_row gt_right">0.74</td>
+<td class="gt_row gt_right">0.31</td>
+<td class="gt_row gt_right">0.75</td>
+<td class="gt_row gt_right">0.74</td></tr>
+    <tr><td class="gt_row gt_right">0.20</td>
+<td class="gt_row gt_right">0.79</td>
+<td class="gt_row gt_right">0.35</td>
+<td class="gt_row gt_right">0.63</td>
+<td class="gt_row gt_right">0.82</td></tr>
+    <tr><td class="gt_row gt_right">0.25</td>
+<td class="gt_row gt_right">0.82</td>
+<td class="gt_row gt_right">0.39</td>
+<td class="gt_row gt_right">0.52</td>
+<td class="gt_row gt_right">0.87</td></tr>
+    <tr><td class="gt_row gt_right">0.30</td>
+<td class="gt_row gt_right">0.84</td>
+<td class="gt_row gt_right">0.42</td>
+<td class="gt_row gt_right">0.43</td>
+<td class="gt_row gt_right">0.91</td></tr>
+    <tr><td class="gt_row gt_right">0.35</td>
+<td class="gt_row gt_right">0.85</td>
+<td class="gt_row gt_right">0.45</td>
+<td class="gt_row gt_right">0.34</td>
+<td class="gt_row gt_right">0.93</td></tr>
+    <tr><td class="gt_row gt_right">0.40</td>
+<td class="gt_row gt_right">0.86</td>
+<td class="gt_row gt_right">0.48</td>
+<td class="gt_row gt_right">0.27</td>
+<td class="gt_row gt_right">0.95</td></tr>
+    <tr><td class="gt_row gt_right">0.45</td>
+<td class="gt_row gt_right">0.86</td>
+<td class="gt_row gt_right">0.50</td>
+<td class="gt_row gt_right">0.20</td>
+<td class="gt_row gt_right">0.97</td></tr>
+    <tr><td class="gt_row gt_right">0.50</td>
+<td class="gt_row gt_right">0.86</td>
+<td class="gt_row gt_right">0.52</td>
+<td class="gt_row gt_right">0.15</td>
+<td class="gt_row gt_right">0.98</td></tr>
+    <tr class="gt_group_heading_row">
       <td colspan="5" class="gt_group_heading">LDA</td>
     </tr>
     <tr class="gt_row_group_first"><td class="gt_row gt_right">0.10</td>
@@ -3043,54 +3085,6 @@ All %&gt;% gt(groupname_col = &quot;Model&quot;)</code></pre>
 <td class="gt_row gt_right">0.58</td>
 <td class="gt_row gt_right">0.06</td>
 <td class="gt_row gt_right">0.99</td></tr>
-    <tr class="gt_group_heading_row">
-      <td colspan="5" class="gt_group_heading">LASSO</td>
-    </tr>
-    <tr class="gt_row_group_first"><td class="gt_row gt_right">0.10</td>
-<td class="gt_row gt_right">0.65</td>
-<td class="gt_row gt_right">0.27</td>
-<td class="gt_row gt_right">0.86</td>
-<td class="gt_row gt_right">0.62</td></tr>
-    <tr><td class="gt_row gt_right">0.15</td>
-<td class="gt_row gt_right">0.74</td>
-<td class="gt_row gt_right">0.31</td>
-<td class="gt_row gt_right">0.75</td>
-<td class="gt_row gt_right">0.74</td></tr>
-    <tr><td class="gt_row gt_right">0.20</td>
-<td class="gt_row gt_right">0.79</td>
-<td class="gt_row gt_right">0.35</td>
-<td class="gt_row gt_right">0.63</td>
-<td class="gt_row gt_right">0.82</td></tr>
-    <tr><td class="gt_row gt_right">0.25</td>
-<td class="gt_row gt_right">0.82</td>
-<td class="gt_row gt_right">0.39</td>
-<td class="gt_row gt_right">0.52</td>
-<td class="gt_row gt_right">0.87</td></tr>
-    <tr><td class="gt_row gt_right">0.30</td>
-<td class="gt_row gt_right">0.84</td>
-<td class="gt_row gt_right">0.42</td>
-<td class="gt_row gt_right">0.43</td>
-<td class="gt_row gt_right">0.91</td></tr>
-    <tr><td class="gt_row gt_right">0.35</td>
-<td class="gt_row gt_right">0.85</td>
-<td class="gt_row gt_right">0.45</td>
-<td class="gt_row gt_right">0.34</td>
-<td class="gt_row gt_right">0.93</td></tr>
-    <tr><td class="gt_row gt_right">0.40</td>
-<td class="gt_row gt_right">0.86</td>
-<td class="gt_row gt_right">0.48</td>
-<td class="gt_row gt_right">0.27</td>
-<td class="gt_row gt_right">0.95</td></tr>
-    <tr><td class="gt_row gt_right">0.45</td>
-<td class="gt_row gt_right">0.86</td>
-<td class="gt_row gt_right">0.50</td>
-<td class="gt_row gt_right">0.20</td>
-<td class="gt_row gt_right">0.97</td></tr>
-    <tr><td class="gt_row gt_right">0.50</td>
-<td class="gt_row gt_right">0.86</td>
-<td class="gt_row gt_right">0.52</td>
-<td class="gt_row gt_right">0.15</td>
-<td class="gt_row gt_right">0.98</td></tr>
     <tr class="gt_group_heading_row">
       <td colspan="5" class="gt_group_heading">Boosting</td>
     </tr>
