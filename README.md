@@ -1,1 +1,4 @@
-# 263-Project
+The first goal of this study is to build an interpretable model that predicts diabetes status based on easily collected feature variables. The second goal of this study is to determine which factors are most predictive of diabetes risk. To achieve these goals, we will consider both classification and regression models by fitting LDA, QDA, logistic, LASSO, neural networks, and boosting models.
+
+We are using a publicly available dataset from the CDC’s 2015 Behavioral Risk Factor Surveillance System (BRFSS) containing 20 predictor variables and 253,680 complete survey responses. The outcome variable in our study is a two-class Diabetes indicator, where the first class corresponds to those who self-identified as non-diabetic or prediabetic, and the second class corresponds to those who self-identified as diabetic.
+
